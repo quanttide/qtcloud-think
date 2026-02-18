@@ -88,17 +88,20 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 ### CLI 开发
 
 ```bash
+# 方式一：从项目根目录运行脚本
+./scripts/collect
+
+# 方式二：进入 CLI 目录
 cd src/cli
 
 # 创建虚拟环境 (在项目目录内)
 uv venv
-source .venv/bin/activate
 
 # 安装依赖
 uv sync
 
 # 运行
-python main.py collect
+uv run python main.py
 
 # 测试
 pytest
