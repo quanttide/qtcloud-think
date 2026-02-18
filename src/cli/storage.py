@@ -4,9 +4,10 @@ from pathlib import Path
 
 
 class Storage:
-    def __init__(self, notes_dir: str | None = None):
+    def __init__(self, notes_dir: str | Path | None = None):
         if notes_dir is None:
-            notes_dir = os.getenv("NOTES_DIR", "./notes")
+            root = Path(__file__).parent.parent.parent
+            notes_dir = root / "data" / "cli" / "notes"
         self.notes_dir = Path(notes_dir)
         self.notes_dir.mkdir(parents=True, exist_ok=True)
 
