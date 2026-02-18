@@ -59,6 +59,8 @@ cd src/cli && python -m black . && python -m ruff check . --fix && python -m myp
 
 ## 长期记忆
 
+维护这些文件前先阅读 [CONTRIBUTING.md](CONTRIBUTING.md) 了解相关规范。
+
 | 文件 | 用途 | 何时查阅 |
 |------|------|---------|
 | [ROADMAP.md](ROADMAP.md) | 版本规划 | 开发前确认目标 |

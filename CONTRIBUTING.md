@@ -211,3 +211,9 @@ gh release create 0.0.1 --title "v0.0.1" --notes-file CHANGELOG.md
 - 标题：版本号 + 日期
 - 分类：Added, Changed, Deprecated, Removed, Fixed, Security
 - 仅记录用户可见的变化
+
+### ROADMAP 规范
+
+记录未来版本的规划目标，与 CHANGELOG 互补：
+- CHANGELOG：记录已完成的功能
+- ROADMAP：记录未来的计划
