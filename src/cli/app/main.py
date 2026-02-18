@@ -55,8 +55,25 @@ def run_collect(workspace: str = "default") -> None:
     typer.echo(f"{reflection}\n")
 
     while True:
+        choice = typer.prompt(
+            "\n请选择：\n"
+            "1. 补充更多信息\n"
+            "2. 已有足够信息，结束澄清\n"
+            "3. 不喜欢这个复述，让 AI 重新来\n"
+            "请输入 1/2/3",
+            default="1",
+        ).strip()
+
+        if choice in ("2", "已有足够信息"):
+            break
+        elif choice in ("3", "不喜欢"):
+            typer.echo("\n🪞 好的，我换个方式复述...\n")
+            reflection = clarifier.reflect(original_input)
+            typer.echo(f"{reflection}\n")
+            continue
+
         typer.echo("-" * 40)
-        user_reply = read_multiline("请补充更多信息")
+        user_reply = read_multiline("请补充")
         if not user_reply:
             break
 
