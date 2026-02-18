@@ -3,6 +3,7 @@ import uuid
 import typer
 from clarifier import Clarifier
 from meta import Meta
+from prompts import META_ANALYSIS_PROMPT
 from session_recorder import SessionRecorder
 from storage import Storage
 from workspace import Workspace
@@ -329,17 +330,9 @@ def meta(
         conversation_texts.append(f"总结: {summary}\n对话: {msgs}")
 
     if conversation_texts:
-        analysis_prompt = f"""你是一个系统自省助手。请分析以下用户对话，总结系统的表现和改进建议。
-
-对话摘要：
-{chr(10).join(conversation_texts)}
-
-请返回 JSON 格式：
-{{
-    "strengths": ["系统优点1", "系统优点2"],
-    "weaknesses": ["需要改进的地方1", "需要改进的地方2"],
-    "suggestions": ["具体改进建议1", "具体改进建议2"]
-}}"""
+        analysis_prompt = META_ANALYSIS_PROMPT.format(
+            conversations="\n".join(conversation_texts)
+        )
 
         try:
             clarifier = Clarifier()
