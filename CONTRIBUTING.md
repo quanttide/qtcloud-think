@@ -73,6 +73,8 @@ isort . && black . && ruff check . --fix && mypy src/
 | 常量 | UPPER_SNAKE_CASE | `MAX_RETRIES = 3` |
 | 布尔值 | is_/has_/can_/should_ 前缀 | `is_valid` |
 
+**代码与文档命名一致**：代码模块名与文档文件名尽量保持一致，便于查找关联。如 `collector.py` 对应 `docs/dev/collector.md`。
+
 ### 导入排序
 
 ```python
@@ -140,6 +142,32 @@ data/
 
 - 该目录**不会被提交到 Git**，可安全删除
 - 首次运行应用时会自动创建所需子目录
+
+## 开发者文档
+
+文档位于 `docs/dev/` 目录：
+
+| 文件 | 内容 |
+|------|------|
+| [index.md](../docs/dev/index.md) | 主开发文档：产品愿景、版本目标、核心流程、技术选型 |
+| [meta.md](../docs/dev/meta.md) | Meta 模块设计 |
+| [collector.md](../docs/dev/collector.md) | Collector 收集器设计 |
+
+### 新增模块文档
+
+1. 在 `docs/dev/` 下创建 `{module}.md`
+2. 在 `docs/dev/README.md` 的文件划分表添加链接
+3. 在 `docs/dev/index.md` 末尾添加引用链接
+
+## 规范文档
+
+`docs/spec/` 存放工程标准文件——在开发过程中发现的稳定的、可以长期维护的、具备跨项目价值的核心概念。
+
+例如：认知工程领域的 Collector（收集器）是跨项目可复用的核心概念。
+
+| 文件 | 内容 |
+|------|------|
+| 待补充 | - |
 
 ## 版本发布
 

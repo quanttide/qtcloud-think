@@ -1,4 +1,4 @@
-# 开发计划：收集+澄清 MVP
+# 开发计划：思维外脑 v0.0.x
 
 ## 产品愿景
 
@@ -8,97 +8,64 @@
 
 ---
 
-## 核心流程
+## 版本目标
 
-```
-用户输入 → AI 判断模糊度 → [模糊] 多轮澄清 → [清晰] 存储为结构化 Markdown
-```
+### v0.0.1 - 2026-02-18 ✓
+- CLI 思维收集与澄清工具原型
+- `scripts/collect` 脚本支持从项目根目录运行 CLI
+- `data/` 动态数据目录约定
+- 开发指南文档 (AGENTS.md)
 
----
+### v0.0.2 - [开发中]
+- **目标**: 增加 meta 模块
+- **功能**: 观察自己并提出对自己的修改意见（自我反思与改进建议）
 
-## 需求确认
+### v0.0.2 开发计划
 
-| 需求项 | 决策 |
-|--------|------|
-| 输入方式 | 文字输入 |
-| 模糊判定 | AI 语义理解判断 |
-| 追问方式 | 多轮对话（像朋友聊天帮你理清） |
-| 存储格式 | 带 metadata 的 Markdown（frontmatter） |
+#### 2.1 SessionRecorder 组件
 
----
-
-## 输出格式规范
-
-```markdown
----
-created: 2024-01-15
-status: clarified
-summary: "一句话概括核心观点"
-tags: []
-original: "用户原始输入（保留）"
----
-# [标题自动生成或用户确认]
-
-[澄清后的清晰内容]
-```
-
----
-
-## 技术选型
-
-| 模块 | 技术选型 | 理由 |
-|------|----------|------|
-| LLM | 通义千问（DashScope API） | 已有的 API 密钥 |
-| CLI 框架 | Typer | Python 型安全 |
-| 存储 | 本地文件系统（Markdown） | 兼容现有 Git 笔记体系 |
-| 配置 | .env | 简单易用 |
-
----
-
-## 项目结构
+在澄清流程中收集数据，供 Meta 使用。
 
 ```
 src/cli/
-├── __init__.py
-├── requirements.txt
-├── llm_client.py    # LLM 调用封装
-├── clarifier.py     # 模糊度判断 + 多轮澄清
-├── storage.py       # Markdown 存储
-└── main.py          # CLI 入口
+├── session_recorder.py  # 新增：会话数据收集
 ```
 
----
+数据维度：
+- 对话轮次、耗时
+- 首轮意图是否抓住核心
+- 存储是否成功
+- 用户是否中断
+- API 调用次数
+- 错误记录
 
-## 实现阶段
+#### 2.2 Collector 改造
 
-### Phase 1：核心功能实现 ✅
+修改 `collector.py`，使 `run()` 方法返回 `(Note, SessionRecord)`。
 
-#### 1.1 输入拦截器（Clarifier） ✅
+#### 2.3 Meta 分析器
 
-- 用户输入任意文字
-- 调用 LLM 判断是否"清晰完整"
-- **判断标准**：
-  - 有明确的主题/意图
-  - 逻辑连贯
-  - 有可执行的结论或足够的背景信息
+```
+src/cli/
+├── meta.py  # 新增：Meta 自省分析
+```
 
-#### 1.2 多轮澄清引擎 ✅
+功能：
+- 接收 SessionRecord
+- 分析各维度数据是否异常
+- 生成改进建议
+- 输出到 `data/cli/meta/{date}.md`
 
-- 模糊时触发对话
-- AI 主动追问（理解用户意图）
-- 用户回复 → 重新评估 → 循环直到清晰
+#### 2.4 CLI 集成
 
-#### 1.3 结构化存储 ✅
+在 `main.py` 中，将 Meta 集成到收集流程末尾：
 
-- 输出格式：带 frontmatter 的 Markdown
-- 文件命名：基于时间戳
-
----
-
-### Phase 2：CLI 工具 ✅
-
-- 快速验证核心逻辑
-- 使用 Typer 构建命令行界面
+```
+collect 命令流程：
+1. Collector.run(input) → (Note, SessionRecord)
+2. Meta.analyze(SessionRecord)
+3. 输出笔记路径 + Meta 建议
+```
 
 ---
 
@@ -130,7 +97,13 @@ python main.py collect
 
 ## 下一步
 
-- [ ] 手动测试 CLI 完整流程
-- [ ] 优化 prompt 效果
-- [ ] 添加日志记录
-- [ ] 错误处理增强
+- [ ] 实现 SessionRecorder 组件
+- [ ] 改造 Collector 返回 SessionRecord
+- [ ] 实现 Meta 分析器
+- [ ] CLI 集成 Meta
+
+---
+
+详见 [Meta 模块设计](./meta.md)
+
+详见 [Collector 收集器设计](./collector.md)
