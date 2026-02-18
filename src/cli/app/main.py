@@ -21,7 +21,9 @@ def run_collect(workspace: str = "default") -> None:
     clarifier = Clarifier(recorder)
     storage = Storage(ws)
 
-    typer.echo("欢迎使用思维澄清工具！请输入你的想法（输入 '退出' 结束）\n")
+    typer.echo(
+        "欢迎使用思维外脑！请输入你的想法，我来帮你理清思路（输入 '完成' 结束）\n"
+    )
 
     original_input = typer.prompt("你的想法是什么？")
     if original_input.strip() in ("退出", "exit", "q"):
@@ -29,36 +31,26 @@ def run_collect(workspace: str = "default") -> None:
         recorder.end_session()
         return
 
-    typer.echo("\n正在分析想法清晰度...\n")
-    result = clarifier.check_clarity(original_input)
-    recorder.record_round()
-    recorder.record_intent_captured(result.get("is_clear", False))
-
     conversation = [{"role": "user", "content": original_input}]
 
-    while not result.get("is_clear", False):
-        issues = result.get("issues", ["内容不够清晰"])
-        typer.echo(f"💭 发现问题: {', '.join(issues)}\n")
+    typer.echo("\n🪞 让我复述一下你的想法...\n")
+    reflection = clarifier.reflect(original_input)
+    typer.echo(f"{reflection}\n")
 
-        response = clarifier.ask_clarification(original_input, issues)
-        typer.echo(f"🤖 {response}\n")
-
-        conversation.append({"role": "assistant", "content": response})
-
+    while True:
         user_reply = typer.prompt("请补充信息（输入 '完成' 结束澄清）")
         if user_reply.strip() in ("完成", "done", "finish"):
-            conversation.append({"role": "user", "content": user_reply})
-            recorder.record_user_abandoned()
+            conversation.append({"role": "user", "content": "完成了"})
             break
 
         conversation.append({"role": "user", "content": user_reply})
 
-        typer.echo("\n正在重新分析...\n")
-        result = clarifier.check_clarity(user_reply)
+        typer.echo("\n🪞 让我再帮你理清一下...\n")
+        reflection = clarifier.reflect(user_reply)
+        typer.echo(f"{reflection}\n")
         recorder.record_round()
-        recorder.record_intent_captured(result.get("is_clear", False))
 
-    typer.echo("✅ 想法已澄清！正在生成总结...\n")
+    typer.echo("✅ 正在生成总结...\n")
     clarified = clarifier.summarize(conversation)
 
     summary = clarified.get("summary", "")

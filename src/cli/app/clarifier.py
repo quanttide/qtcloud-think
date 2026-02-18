@@ -3,7 +3,6 @@ import json
 from llm_client import get_client
 from prompts import (
     CLARIFICATION_PROMPT,
-    CLARITY_PROMPT,
     SUMMARIZE_PROMPT,
     SYSTEM_PROMPT,
 )
@@ -15,28 +14,9 @@ class Clarifier:
         self.client = get_client()
         self.recorder = recorder or SessionRecorder(session_id="default")
 
-    def check_clarity(self, text: str) -> dict:
-        user_msg = f"请判断以下内容是否清晰：\n\n{text}"
-        response = self.client.chat_once(
-            SYSTEM_PROMPT + "\n\n" + CLARITY_PROMPT, user_msg
-        )
-        if self.recorder:
-            self.recorder.record_api_call()
-
-        try:
-            result = json.loads(response.strip().strip("```json").strip("```"))
-            return result
-        except json.JSONDecodeError:
-            return {
-                "is_clear": False,
-                "reason": "解析失败",
-                "issues": ["无法判断清晰度"],
-            }
-
-    def ask_clarification(self, original: str, issues: list[str]) -> str:
-        user_msg = CLARIFICATION_PROMPT.format(
-            original=original, issues=", ".join(issues)
-        )
+    def reflect(self, original: str) -> str:
+        """像镜子一样复述用户的想法，并提问帮助澄清"""
+        user_msg = CLARIFICATION_PROMPT.format(original=original)
         response = self.client.chat_once(SYSTEM_PROMPT + "\n\n" + user_msg, "")
         if self.recorder:
             self.recorder.record_api_call()
@@ -65,23 +45,9 @@ class Clarifier:
 
     def run(self, input_text: str) -> tuple[dict, str, SessionRecord]:
         conversation = [{"role": "user", "content": input_text}]
-        result = self.check_clarity(input_text)
 
         if self.recorder:
             self.recorder.record_round()
-            self.recorder.record_intent_captured(result.get("is_clear", False))
-
-        while not result.get("is_clear", False):
-            issues = result.get("issues", ["内容不够清晰"])
-            response = self.ask_clarification(input_text, issues)
-            conversation.append({"role": "assistant", "content": response})
-            conversation.append({"role": "user", "content": "[用户补充中]"})
-
-            if self.recorder:
-                self.recorder.record_round()
-                self.recorder.record_intent_captured(True)
-
-            result = self.check_clarity(input_text)
 
         clarified = self.summarize(conversation)
         return clarified, input_text, self.recorder.end_session()
