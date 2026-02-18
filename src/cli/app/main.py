@@ -61,7 +61,7 @@ def run_collect(workspace: str = "default") -> None:
             "2. 已有足够信息，结束澄清\n"
             "3. 不喜欢这个复述，让 AI 重新来\n"
             "请输入 1/2/3",
-            default="1",
+            default="2",
         ).strip()
 
         if choice in ("2", "已有足够信息"):
@@ -75,11 +75,12 @@ def run_collect(workspace: str = "default") -> None:
         typer.echo("-" * 40)
         user_reply = read_multiline("请补充")
         if not user_reply:
-            break
+            continue
 
         conversation.append({"role": "user", "content": user_reply})
         recorder.record_round()
 
+        original_input = user_reply
         typer.echo("\n🪞 让我再帮你理清一下...\n")
         reflection = clarifier.reflect(user_reply)
         typer.echo(f"{reflection}\n")
