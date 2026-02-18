@@ -79,15 +79,18 @@ class Clarifier:
         return response
 
     def summarize(self, conversation: list[dict]) -> dict:
-        system = SYSTEM_PROMPT + """
+        system = (
+            SYSTEM_PROMPT
+            + """
 
 请根据对话内容，生成一段清晰、连贯的总结。
 
-输出格式（JSON）：
+输出格式（JSON），content 必须是纯文本，不能包含 JSON 或代码块：
 {
     "summary": "一句话概括核心观点",
-    "content": "澄清后的完整内容"
+    "content": "澄清后的完整内容（纯文本，不要包含任何 JSON 或 ``` 符号）"
 }"""
+        )
         conversation_text = "\n".join(
             [
                 f"{'用户' if msg['role'] == 'user' else '助手'}: {msg['content']}"
