@@ -1,5 +1,6 @@
 import uuid
 
+import click
 import typer
 from clarifier import Clarifier
 from meta import Meta
@@ -9,6 +10,28 @@ from storage import Storage
 from workspace import Workspace
 
 app = typer.Typer(help="思维收集与澄清工具")
+
+
+def get_multiline_input(prompt_text: str) -> str:
+    """使用系统默认编辑器获取多行输入"""
+    typer.echo(f"{prompt_text}（保存退出或 EOF 结束）")
+    typer.echo("-" * 40)
+    try:
+        content = click.edit(editor="vim", require_save=False, extension=".txt")
+        if content is None:
+            return ""
+        return content.strip()
+    except Exception:
+        lines = []
+        while True:
+            try:
+                line = input("> ")
+            except EOFError:
+                break
+            if line.strip() == "EOF":
+                break
+            lines.append(line)
+        return "\n".join(lines).strip()
 
 
 def run_collect(workspace: str = "default") -> None:
@@ -21,24 +44,11 @@ def run_collect(workspace: str = "default") -> None:
     clarifier = Clarifier(recorder)
     storage = Storage(ws)
 
-    typer.echo("欢迎使用思维外脑！请输入你的想法（输入 '完成' 结束输入）\n")
-    typer.echo("-" * 40)
+    typer.echo("欢迎使用思维外脑！\n")
 
-    lines = []
-    while True:
-        line = input("> ")
-        if line.strip() == "完成":
-            break
-        lines.append(line)
-
-    original_input = "\n".join(lines).strip()
+    original_input = get_multiline_input("请输入你的想法")
     if not original_input:
         typer.echo("⚠️ 请输入想法")
-        return
-
-    if original_input.strip() in ("退出", "exit", "q"):
-        recorder.record_user_abandoned()
-        recorder.end_session()
         return
 
     conversation = [{"role": "user", "content": original_input}]
@@ -48,21 +58,10 @@ def run_collect(workspace: str = "default") -> None:
     typer.echo(f"{reflection}\n")
 
     while True:
-        typer.echo("-" * 40)
-        typer.echo("请补充更多信息（直接回车结束，或输入 '完成' 结束输入）")
-        lines = []
-        while True:
-            line = input("> ")
-            if not line.strip():
-                break
-            if line.strip() == "完成":
-                break
-            lines.append(line)
-
-        if not lines or lines[0].strip() == "完成":
+        user_reply = get_multiline_input("请补充更多信息")
+        if not user_reply:
             break
 
-        user_reply = "\n".join(lines).strip()
         conversation.append({"role": "user", "content": user_reply})
         recorder.record_round()
 
