@@ -1,6 +1,5 @@
 import uuid
 
-import click
 import typer
 from clarifier import Clarifier
 from meta import Meta
@@ -12,26 +11,17 @@ from workspace import Workspace
 app = typer.Typer(help="思维收集与澄清工具")
 
 
-def get_multiline_input(prompt_text: str) -> str:
-    """使用系统默认编辑器获取多行输入"""
-    typer.echo(f"{prompt_text}（保存退出或 EOF 结束）")
-    typer.echo("-" * 40)
-    try:
-        content = click.edit(editor="vim", require_save=False, extension=".txt")
-        if content is None:
-            return ""
-        return content.strip()
-    except Exception:
-        lines = []
-        while True:
-            try:
-                line = input("> ")
-            except EOFError:
-                break
-            if line.strip() == "EOF":
-                break
+def read_multiline(prompt_text: str) -> str:
+    """读取多行输入，Ctrl+D 结束"""
+    typer.echo(f"{prompt_text}（Ctrl+D 结束）")
+    lines = []
+    while True:
+        try:
+            line = input("| ")
             lines.append(line)
-        return "\n".join(lines).strip()
+        except EOFError:
+            break
+    return "\n".join(lines).strip()
 
 
 def run_collect(workspace: str = "default") -> None:
@@ -46,7 +36,7 @@ def run_collect(workspace: str = "default") -> None:
 
     typer.echo("欢迎使用思维外脑！\n")
 
-    original_input = get_multiline_input("请输入你的想法")
+    original_input = read_multiline("请输入你的想法")
     if not original_input:
         typer.echo("⚠️ 请输入想法")
         return
@@ -58,7 +48,8 @@ def run_collect(workspace: str = "default") -> None:
     typer.echo(f"{reflection}\n")
 
     while True:
-        user_reply = get_multiline_input("请补充更多信息")
+        typer.echo("-" * 40)
+        user_reply = read_multiline("请补充更多信息")
         if not user_reply:
             break
 
