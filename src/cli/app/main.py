@@ -10,16 +10,8 @@ from workspace import Workspace
 app = typer.Typer(help="思维收集与澄清工具")
 
 
-@app.command()
-def collect(
-    workspace: str = typer.Option(
-        "default",
-        "--workspace",
-        "-w",
-        help="指定工作空间",
-    ),
-):
-    """收集并澄清你的想法"""
+def run_collect(workspace: str = "default") -> None:
+    """执行 collect 逻辑"""
     ws = Workspace(workspace)
     typer.echo(f"📁 当前工作空间: {ws.name}\n")
 
@@ -89,6 +81,19 @@ def collect(
 
 
 @app.command()
+def collect(
+    workspace: str = typer.Option(
+        "default",
+        "--workspace",
+        "-w",
+        help="指定工作空间",
+    ),
+):
+    """收集并澄清你的想法"""
+    run_collect(workspace)
+
+
+@app.command()
 def meta(
     workspace: str = typer.Option(
         "default",
@@ -101,7 +106,7 @@ def meta(
     from session_recorder import SessionRecord
 
     ws = Workspace(workspace)
-    meta = Meta(ws)
+    meta_obj = Meta(ws)
 
     typer.echo(f"📊 正在分析工作空间: {ws.name}\n")
 
@@ -114,7 +119,7 @@ def meta(
     sample_record.rounds = 1
     sample_record.api_calls = 1
 
-    filepath = meta.save(sample_record)
+    filepath = meta_obj.save(sample_record)
 
     typer.echo(f"✅ Meta 自省报告已生成: {filepath}")
 
