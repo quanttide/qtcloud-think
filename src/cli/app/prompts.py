@@ -31,12 +31,16 @@ CLARIFICATION_PROMPT = """用户的想法：{original}
 复述：xxx
 （可选）追问：xxx"""
 
-SUMMARIZE_PROMPT = """请根据对话内容，生成一段清晰、连贯的总结。
+SUMMARIZE_PROMPT = """请根据对话内容，提取用户的核心想法并总结。
 
-输出格式（JSON），content 必须是纯文本，不能包含 JSON 或代码块：
+注意：
+- 只提取用户的想法，不要包含 AI 的复述或提问
+- content 必须是纯文本，不要包含 JSON 或 ``` 符号
+
+输出格式（JSON）：
 {{
-    "summary": "一句话概括核心观点",
-    "content": "澄清后的完整内容（纯文本，不要包含任何 JSON 或 ``` 符号）"
+    "summary": "一句话概括用户想法",
+    "content": "用户的完整想法（纯文本）"
 }}"""
 
 META_ANALYSIS_PROMPT = """你是一个系统自省助手。请分析以下用户对话，总结系统的表现和改进建议。
