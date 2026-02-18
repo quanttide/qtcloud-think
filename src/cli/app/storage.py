@@ -28,11 +28,15 @@ class Storage:
         now = datetime.now()
         tags_str = ", ".join(tags) if tags else ""
 
+        normalized_summary, normalized_content = self._normalize_content(
+            summary, clarified
+        )
+
         frontmatter_dict = {
             "id": note_id,
             "created": now.isoformat(),
             "status": status,
-            "summary": summary,
+            "summary": normalized_summary,
             "tags": f"[{tags_str}]",
             "original": original,
         }
@@ -40,7 +44,7 @@ class Storage:
             frontmatter_dict["rejection_reason"] = rejection_reason
 
         frontmatter = self._build_frontmatter(frontmatter_dict)
-        content = frontmatter + f"\n\n# {summary}\n\n{clarified}"
+        content = frontmatter + f"\n\n# {normalized_summary}\n\n{normalized_content}"
 
         if status == "received":
             target_dir = self.workspace.get_received_dir()
@@ -63,6 +67,19 @@ class Storage:
             )
 
         return filepath
+
+    def _normalize_content(self, summary: str, content: str) -> tuple[str, str]:
+        if content.strip().startswith("{"):
+            try:
+                parsed = json.loads(content.strip())
+                if isinstance(parsed, dict):
+                    extracted_summary = parsed.get("summary", summary)
+                    extracted_content = parsed.get("content", content)
+                    if extracted_summary != summary:
+                        return extracted_summary, extracted_content
+            except json.JSONDecodeError:
+                pass
+        return summary, content
 
     def save_conversation(
         self,
