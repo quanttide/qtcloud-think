@@ -60,34 +60,174 @@ def run_collect(workspace: str = "default") -> None:
     typer.echo("✅ 想法已澄清！正在生成总结...\n")
     clarified = clarifier.summarize(conversation)
 
-    lines = clarified.split("\n")
-    summary = ""
-    content = ""
-    in_content = False
-    for line in lines:
-        if line.startswith("summary:"):
-            summary = line.replace("summary:", "").strip().strip('"')
-        elif line.startswith("content:"):
-            in_content = True
-            content = line.replace("content:", "").strip()
-        elif in_content:
-            content += "\n" + line
+    summary = clarified.get("summary", "")
+    content = clarified.get("content", "")
+
+    typer.echo("\n" + "=" * 40)
+    typer.echo("📝 澄清结果：")
+    typer.echo("=" * 40)
+    typer.echo(f"\n{summary}\n")
+    typer.echo("-" * 40)
+    typer.echo(f"{content}\n")
+    typer.echo("=" * 40 + "\n")
+
+    while True:
+        choice = typer.prompt(
+            "请选择：\n"
+            "1. 接收 - 存入长期记忆\n"
+            "2. 拒绝 - 丢弃（可填写原因）\n"
+            "3. 悬疑 - 暂存待定\n"
+            "请输入 1/2/3",
+            default="1",
+        ).strip()
+
+        if choice in ("1", "接收"):
+            status = "received"
+            rejection_reason = None
+            break
+        elif choice in ("3", "悬疑"):
+            status = "pending"
+            rejection_reason = None
+            break
+        elif choice in ("2", "拒绝"):
+            status = "rejected"
+            reason_choice = (
+                typer.prompt("是否填写拒绝原因？(y/n)", default="n").strip().lower()
+            )
+            if reason_choice in ("y", "是"):
+                rejection_reason = typer.prompt("请输入拒绝原因（可选）")
+            else:
+                rejection_reason = None
+            break
+        else:
+            typer.echo("⚠️ 请输入 1、2 或 3")
 
     filepath = storage.save(
         original_input,
-        content.strip(),
+        content,
         summary,
         session_record=recorder.record.to_dict(),
+        status=status,
+        rejection_reason=rejection_reason,
     )
 
-    # 保存对话历史
     storage.save_conversation(conversation, summary, session_id)
 
     recorder.record_storage(True, str(filepath))
     recorder.end_session()
 
-    typer.echo(f"✅ 已保存到: {filepath}")
+    if status == "received":
+        typer.echo(f"✅ 已保存到长期记忆: {filepath}")
+    elif status == "pending":
+        typer.echo(f"⏳ 已暂存到待定: {filepath}")
+    elif status == "rejected":
+        typer.echo(f"❌ 已拒绝: {filepath}")
+
     typer.echo(f"\n摘要: {summary}")
+
+
+@app.command()
+def pending(
+    workspace: str = typer.Option(
+        "default",
+        "--workspace",
+        "-w",
+        help="指定工作空间",
+    ),
+):
+    """列出所有悬疑待定的内容"""
+    ws = Workspace(workspace)
+    storage = Storage(ws)
+
+    pending_notes = storage.list_pending()
+
+    if not pending_notes:
+        typer.echo("📭 当前没有悬疑待定的内容")
+        return
+
+    typer.echo(f"📋 悬疑待定内容 ({len(pending_notes)} 条)：\n")
+
+    for i, note in enumerate(pending_notes, 1):
+        typer.echo(f"{i}. {note['summary']}")
+        typer.echo(f"   ID: {note['id']}")
+        typer.echo(f"   创建时间: {note['created']}")
+        typer.echo(f"   原始输入: {note['original'][:50]}...")
+        typer.echo()
+
+
+@app.command()
+def review(
+    workspace: str = typer.Option(
+        "default",
+        "--workspace",
+        "-w",
+        help="指定工作空间",
+    ),
+):
+    """对悬疑待定内容进行重新决策"""
+    ws = Workspace(workspace)
+    storage = Storage(ws)
+
+    pending_notes = storage.list_pending()
+
+    if not pending_notes:
+        typer.echo("📭 当前没有悬疑待定的内容")
+        return
+
+    typer.echo(f"📋 悬疑待定内容 ({len(pending_notes)} 条)：\n")
+
+    for i, note in enumerate(pending_notes, 1):
+        typer.echo(f"\n{'=' * 40}")
+        typer.echo(f"{i}. {note['summary']}")
+        typer.echo(f"   原始输入: {note['original']}")
+        typer.echo("=" * 40)
+
+        filepath = note["filepath"]
+        content = filepath.read_text(encoding="utf-8")
+        frontmatter, body = storage._parse_frontmatter(content)
+        typer.echo(f"\n内容:\n{body}\n")
+
+        while True:
+            choice = typer.prompt(
+                "\n请选择：\n"
+                "1. 接收 - 存入长期记忆\n"
+                "2. 拒绝 - 丢弃（可填写原因）\n"
+                "3. 跳过 - 保留在待定\n"
+                "请输入 1/2/3",
+                default="3",
+            ).strip()
+
+            if choice in ("1", "接收"):
+                storage.move_file(
+                    note["id"],
+                    ws.get_pending_dir(),
+                    "received",
+                )
+                typer.echo("✅ 已接收，移至长期记忆")
+                break
+            elif choice in ("2", "拒绝"):
+                reason_choice = (
+                    typer.prompt("是否填写拒绝原因？(y/n)", default="n").strip().lower()
+                )
+                if reason_choice in ("y", "是"):
+                    rejection_reason = typer.prompt("请输入拒绝原因")
+                else:
+                    rejection_reason = None
+                storage.move_file(
+                    note["id"],
+                    ws.get_pending_dir(),
+                    "rejected",
+                    rejection_reason,
+                )
+                typer.echo("❌ 已拒绝")
+                break
+            elif choice in ("3", "跳过"):
+                typer.echo("⏭️ 跳过")
+                break
+            else:
+                typer.echo("⚠️ 请输入 1、2 或 3")
+
+    typer.echo("\n✅ 审查完成")
 
 
 @app.command()

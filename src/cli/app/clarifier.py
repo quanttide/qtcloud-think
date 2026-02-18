@@ -78,16 +78,16 @@ class Clarifier:
             self.recorder.record_api_call()
         return response
 
-    def summarize(self, conversation: list[dict]) -> str:
+    def summarize(self, conversation: list[dict]) -> dict:
         system = SYSTEM_PROMPT + """
 
 请根据对话内容，生成一段清晰、连贯的总结。
 
-输出格式（Markdown）：
----
-summary: 一句话概括核心观点
-content: 澄清后的完整内容
----"""
+输出格式（JSON）：
+{
+    "summary": "一句话概括核心观点",
+    "content": "澄清后的完整内容"
+}"""
         conversation_text = "\n".join(
             [
                 f"{'用户' if msg['role'] == 'user' else '助手'}: {msg['content']}"
@@ -97,9 +97,17 @@ content: 澄清后的完整内容
         response = self.client.chat_once(system, conversation_text)
         if self.recorder:
             self.recorder.record_api_call()
-        return response
 
-    def run(self, input_text: str) -> tuple[str, str, SessionRecord]:
+        try:
+            result = json.loads(response.strip().strip("```json").strip("```"))
+            return result
+        except json.JSONDecodeError:
+            return {
+                "summary": "总结失败",
+                "content": response,
+            }
+
+    def run(self, input_text: str) -> tuple[dict, str, SessionRecord]:
         conversation = [{"role": "user", "content": input_text}]
         result = self.check_clarity(input_text)
 
