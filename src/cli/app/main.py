@@ -12,15 +12,22 @@ app = typer.Typer(help="思维收集与澄清工具")
 
 
 def read_multiline(prompt_text: str) -> str:
-    """读取多行输入，Ctrl+D 结束"""
-    typer.echo(f"{prompt_text}（Ctrl+D 结束）")
+    """读取多行输入，连续两个空行结束"""
+    typer.echo(f"{prompt_text}（连续两个空行结束）\n")
     lines = []
+    empty_count = 0
     while True:
         try:
-            line = input("| ")
-            lines.append(line)
+            line = input()
         except EOFError:
             break
+        if not line:
+            empty_count += 1
+            if empty_count >= 2:
+                break
+            continue
+        empty_count = 0
+        lines.append(line)
     return "\n".join(lines).strip()
 
 
