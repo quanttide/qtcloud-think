@@ -24,9 +24,11 @@ uv run python main.py
 
 # 测试
 pytest tests/test_file.py::TestClass::test_method
+pytest tests/ -k "pattern"
 
-# Lint
-isort . && black . && ruff check . --fix && mypy src/
+# Lint & Typecheck（项目根目录运行）
+cd src/cli && uv pip install black ruff mypy
+cd src/cli && python -m black . && python -m ruff check . --fix && python -m mypy .
 ```
 
 ---

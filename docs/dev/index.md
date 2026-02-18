@@ -104,6 +104,28 @@ python main.py collect
 
 ---
 
+## 运行测试
+
+```bash
+python tests/test_module_checker.py
+```
+
+## 已知架构问题
+
+### main 模块耦合风险
+
+**问题 1**：main 与 session_recorder 职责耦合
+- main 负责多轮问答引导并记录过程
+- session_recorder 专门追踪交互轮次
+- **状态**：目前合理，main 作为协调者调用 session_recorder
+
+**问题 2**：main 与 storage 边界模糊
+- main 提到"保存元数据"
+- storage 负责文件持久化
+- **状态**：需明确 main 仅调用 storage 而非自行处理
+
+---
+
 详见 [Meta 模块设计](./meta.md)
 
 详见 [Collector 收集器设计](./collector.md)

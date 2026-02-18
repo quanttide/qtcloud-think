@@ -1,6 +1,6 @@
 import json
-from typing import Literal
 from llm_client import get_client
+from session_recorder import SessionRecorder, SessionRecord
 
 CLARITY_PROMPT = """你是一个思维澄清助手。你的任务是判断用户的输入是否足够清晰，可以被理解和处理。
 
@@ -30,12 +30,15 @@ CLARIFICATION_PROMPT = """你是一个思维澄清助手。用户有一个想法
 
 
 class Clarifier:
-    def __init__(self):
+    def __init__(self, recorder: SessionRecorder | None = None):
         self.client = get_client()
+        self.recorder = recorder or SessionRecorder(session_id="default")
 
     def check_clarity(self, text: str) -> dict:
         user_msg = f"请判断以下内容是否清晰：\n\n{text}"
         response = self.client.chat_once(CLARITY_PROMPT, user_msg)
+        if self.recorder:
+            self.recorder.record_api_call()
 
         try:
             result = json.loads(response.strip().strip("```json").strip("```"))
@@ -51,7 +54,10 @@ class Clarifier:
         user_msg = CLARIFICATION_PROMPT.format(
             original=original, issues=", ".join(issues)
         )
-        return self.client.chat_once("你是一个友好的思维对话助手。", user_msg)
+        response = self.client.chat_once("你是一个友好的思维对话助手。", user_msg)
+        if self.recorder:
+            self.recorder.record_api_call()
+        return response
 
     def summarize(self, conversation: list[dict]) -> str:
         system = """请根据对话内容，生成一段清晰、连贯的总结。
@@ -67,4 +73,30 @@ content: 澄清后的完整内容
                 for msg in conversation
             ]
         )
-        return self.client.chat_once(system, conversation_text)
+        response = self.client.chat_once(system, conversation_text)
+        if self.recorder:
+            self.recorder.record_api_call()
+        return response
+
+    def run(self, input_text: str) -> tuple[str, str, SessionRecord]:
+        conversation = [{"role": "user", "content": input_text}]
+        result = self.check_clarity(input_text)
+
+        if self.recorder:
+            self.recorder.record_round()
+            self.recorder.record_intent_captured(result.get("is_clear", False))
+
+        while not result.get("is_clear", False):
+            issues = result.get("issues", ["内容不够清晰"])
+            response = self.ask_clarification(input_text, issues)
+            conversation.append({"role": "assistant", "content": response})
+            conversation.append({"role": "user", "content": "[用户补充中]"})
+
+            if self.recorder:
+                self.recorder.record_round()
+                self.recorder.record_intent_captured(True)
+
+            result = self.check_clarity(input_text)
+
+        clarified = self.summarize(conversation)
+        return clarified, input_text, self.recorder.end_session()
