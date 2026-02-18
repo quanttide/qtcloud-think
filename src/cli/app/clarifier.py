@@ -3,6 +3,7 @@ import json
 from llm_client import get_client
 from prompts import (
     CLARIFICATION_PROMPT,
+    CONTINUE_PROMPT,
     SUMMARIZE_PROMPT,
     SYSTEM_PROMPT,
 )
@@ -42,6 +43,20 @@ class Clarifier:
                 "summary": "总结失败",
                 "content": response,
             }
+
+    def continue_dialogue(self, conversation: list[dict]) -> str:
+        """继续对话，回应用户对总结的提问"""
+        system = SYSTEM_PROMPT + "\n\n" + CONTINUE_PROMPT
+        conversation_text = "\n".join(
+            [
+                f"{'用户' if msg['role'] == 'user' else '助手'}: {msg['content']}"
+                for msg in conversation
+            ]
+        )
+        response = self.client.chat_once(system, conversation_text)
+        if self.recorder:
+            self.recorder.record_api_call()
+        return response
 
     def run(self, input_text: str) -> tuple[dict, str, SessionRecord]:
         conversation = [{"role": "user", "content": input_text}]

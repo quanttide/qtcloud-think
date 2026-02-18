@@ -53,6 +53,7 @@ def run_collect(workspace: str = "default") -> None:
     typer.echo("\n🪞 让我复述一下你的想法...\n")
     reflection = clarifier.reflect(original_input)
     typer.echo(f"{reflection}\n")
+    conversation.append({"role": "assistant", "content": reflection})
 
     while True:
         choice = typer.prompt(
@@ -73,6 +74,7 @@ def run_collect(workspace: str = "default") -> None:
         typer.echo("\n🪞 让我再帮你理清一下...\n")
         reflection = clarifier.reflect(user_reply)
         typer.echo(f"{reflection}\n")
+        conversation.append({"role": "assistant", "content": reflection})
 
     typer.echo("✅ 正在生成总结...\n")
     clarified = clarifier.summarize(conversation)
@@ -92,14 +94,34 @@ def run_collect(workspace: str = "default") -> None:
         choice = typer.prompt(
             "\n请选择：\n"
             "1. 接收 - 存入长期记忆\n"
-            "2. 修改 - 调整摘要或内容\n"
-            "3. 拒绝 - 丢弃（可填写原因）\n"
-            "4. 悬疑 - 暂存待定\n"
-            "请输入 1/2/3/4",
+            "2. 继续对话 - 针对总结提问\n"
+            "3. 修改 - 调整摘要或内容\n"
+            "4. 拒绝 - 丢弃（可填写原因）\n"
+            "5. 悬疑 - 暂存待定\n"
+            "请输入 1/2/3/4/5",
             default="1",
         ).strip()
 
-        if choice in ("2", "修改"):
+        if choice == "2" or choice == "继续对话":
+            user_question = typer.prompt("请输入你的问题（直接回车结束澄清）").strip()
+            if not user_question:
+                typer.echo("好的，如果你没有其他问题，可以选择接收或结束。\n")
+                continue
+            conversation.append({"role": "user", "content": user_question})
+            recorder.record_round()
+
+            typer.echo("\n💭 让我想想...\n")
+            response = clarifier.continue_dialogue(conversation)
+            typer.echo(f"{response}\n")
+            conversation.append({"role": "assistant", "content": response})
+
+            typer.echo("✅ 正在更新总结...\n")
+            clarified = clarifier.summarize(conversation)
+            summary = clarified.get("summary", "")
+            content = clarified.get("content", "")
+            continue
+
+        if choice in ("3", "修改"):
             edit_choice = typer.prompt(
                 "修改什么？\n1. 摘要\n2. 内容\n请输入 1/2",
             ).strip()
@@ -114,11 +136,11 @@ def run_collect(workspace: str = "default") -> None:
             status = "received"
             rejection_reason = None
             break
-        elif choice in ("4", "悬疑"):
+        elif choice in ("5", "悬疑"):
             status = "pending"
             rejection_reason = None
             break
-        elif choice in ("3", "拒绝"):
+        elif choice in ("4", "拒绝"):
             status = "rejected"
             reason_choice = (
                 typer.prompt("是否填写拒绝原因？(y/n)", default="n").strip().lower()
@@ -129,7 +151,7 @@ def run_collect(workspace: str = "default") -> None:
                 rejection_reason = None
             break
         else:
-            typer.echo("⚠️ 请输入 1、2、3 或 4")
+            typer.echo("⚠️ 请输入 1、2、3、4 或 5")
 
     filepath = storage.save(
         original_input,
