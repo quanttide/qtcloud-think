@@ -73,33 +73,45 @@ def run_collect(workspace: str = "default") -> None:
     summary = clarified.get("summary", "")
     content = clarified.get("content", "")
 
-    typer.echo("\n" + "=" * 40)
-    typer.echo("📝 澄清结果：")
-    typer.echo("=" * 40)
-    typer.echo(f"\n{summary}\n")
-    typer.echo("-" * 40)
-    typer.echo(f"{content}\n")
-    typer.echo("=" * 40 + "\n")
-
     while True:
+        typer.echo("\n" + "=" * 40)
+        typer.echo("📝 澄清结果：")
+        typer.echo("=" * 40)
+        typer.echo(f"\n摘要：{summary}\n")
+        typer.echo("-" * 40)
+        typer.echo(f"内容：\n{content}\n")
+        typer.echo("=" * 40)
+
         choice = typer.prompt(
-            "请选择：\n"
+            "\n请选择：\n"
             "1. 接收 - 存入长期记忆\n"
-            "2. 拒绝 - 丢弃（可填写原因）\n"
-            "3. 悬疑 - 暂存待定\n"
-            "请输入 1/2/3",
+            "2. 修改 - 调整摘要或内容\n"
+            "3. 拒绝 - 丢弃（可填写原因）\n"
+            "4. 悬疑 - 暂存待定\n"
+            "请输入 1/2/3/4",
             default="1",
         ).strip()
+
+        if choice in ("2", "修改"):
+            edit_choice = typer.prompt(
+                "修改什么？\n1. 摘要\n2. 内容\n请输入 1/2",
+            ).strip()
+            if edit_choice == "1":
+                summary = typer.prompt("请输入新摘要", default=summary)
+            elif edit_choice == "2":
+                typer.echo("请输入新内容（连续两个空行结束）：")
+                content = read_multiline("") or content
+            continue
 
         if choice in ("1", "接收"):
             status = "received"
             rejection_reason = None
             break
-        elif choice in ("3", "悬疑"):
+        elif choice in ("4", "悬疑"):
             status = "pending"
             rejection_reason = None
             break
-        elif choice in ("2", "拒绝"):
+        elif choice in ("3", "拒绝"):
             status = "rejected"
             reason_choice = (
                 typer.prompt("是否填写拒绝原因？(y/n)", default="n").strip().lower()
@@ -110,7 +122,7 @@ def run_collect(workspace: str = "default") -> None:
                 rejection_reason = None
             break
         else:
-            typer.echo("⚠️ 请输入 1、2 或 3")
+            typer.echo("⚠️ 请输入 1、2、3 或 4")
 
     filepath = storage.save(
         original_input,
