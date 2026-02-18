@@ -54,36 +54,16 @@ def run_collect(workspace: str = "default") -> None:
     reflection = clarifier.reflect(original_input)
     typer.echo(f"{reflection}\n")
 
-    while True:
-        choice = typer.prompt(
-            "\n请选择：\n"
-            "1. 补充更多信息\n"
-            "2. 已有足够信息，结束澄清\n"
-            "3. 不喜欢这个复述，让 AI 重新来\n"
-            "请输入 1/2/3",
-            default="2",
-        ).strip()
+    choice = typer.prompt(
+        "\n请选择：\n1. 补充一些信息\n2. 已有足够信息，结束澄清\n请输入 1/2",
+        default="2",
+    ).strip()
 
-        if choice in ("2", "已有足够信息"):
-            break
-        elif choice in ("3", "不喜欢"):
-            typer.echo("\n🪞 好的，我换个方式复述...\n")
-            reflection = clarifier.reflect(original_input)
-            typer.echo(f"{reflection}\n")
-            continue
-
-        typer.echo("-" * 40)
+    if choice == "1":
         user_reply = read_multiline("请补充")
-        if not user_reply:
-            continue
-
-        conversation.append({"role": "user", "content": user_reply})
-        recorder.record_round()
-
-        original_input = user_reply
-        typer.echo("\n🪞 让我再帮你理清一下...\n")
-        reflection = clarifier.reflect(user_reply)
-        typer.echo(f"{reflection}\n")
+        if user_reply:
+            conversation.append({"role": "user", "content": user_reply})
+            recorder.record_round()
 
     typer.echo("✅ 正在生成总结...\n")
     clarified = clarifier.summarize(conversation)
