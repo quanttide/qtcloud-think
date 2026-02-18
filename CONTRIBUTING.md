@@ -159,6 +159,15 @@ data/
 2. 在 `docs/dev/README.md` 的文件划分表添加链接
 3. 在 `docs/dev/index.md` 末尾添加引用链接
 
+## 用户文档
+
+文档位于 `docs/user/` 目录。编写用户文档时要注意介绍最佳实践，帮助用户正确使用功能。
+
+| 文件 | 内容 |
+|------|------|
+| [index.md](../docs/user/index.md) | 用户指南：快速开始、命令使用 |
+| [workspace.md](../docs/user/workspace.md) | Workspace 最佳实践 |
+
 ## 规范文档
 
 `docs/spec/` 存放工程标准文件——在开发过程中发现的稳定的、可以长期维护的、具备跨项目价值的核心概念。

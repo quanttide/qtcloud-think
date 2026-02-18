@@ -9,21 +9,23 @@
 Workspace（工作空间）是一个数据隔离单元，每个 Workspace 有独立的数据存储，互不干扰。
 
 - **类型**：领域实体（Domain Entity）
-- **用途**：隔离不同部门/用途的数据
-- **结构**：`data/{workspace_name}/`
+- **用途**：隔离不同用途的数据
 
-### 推荐划分
+### 工作空间
 
 | Workspace | 用途 |
 |-----------|------|
-| `personal` | 个人思考 |
-| `shared` | 团队共享 |
+| `default` | 个人思维笔记（默认） |
 | `meta` | 系统自省数据 |
-| `engineering` | 工程部 |
-| `marketing` | 市场部 |
 
-### 数据流转
+### 数据结构
 
-1. **个人 → 团队**：重要的个人思考可以移动到 `shared`
-2. **团队 → 部门**：部门共性内容上升为部门级
-3. **定期归档**：过期数据可以归档
+```
+data/
+├── default/            # default workspace
+│   ├── notes/
+│   └── meta/
+└── meta/               # meta workspace
+    ├── notes/
+    └── meta/
+```

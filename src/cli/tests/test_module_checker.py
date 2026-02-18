@@ -2,7 +2,7 @@ import json
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent.parent / "src" / "cli"))
+sys.path.insert(0, str(Path(__file__).parent.parent / "app"))
 
 from llm_client import get_client
 
@@ -145,6 +145,38 @@ class ModuleAnalyzer:
         return "\n".join(lines)
 
 
+def test_module_analyzer_can_be_instantiated():
+    """测试 ModuleAnalyzer 可以被实例化"""
+    analyzer = ModuleAnalyzer(Path("app"))
+    assert analyzer is not None
+    assert analyzer.src_dir == Path("app")
+
+
+def test_module_analyzer_discovers_modules():
+    """测试模块发现功能"""
+    analyzer = ModuleAnalyzer(Path("app"))
+    modules = analyzer._discover_modules()
+    assert len(modules) > 0
+    assert "main" in modules
+    assert "clarifier" in modules
+
+
+def test_workspace_default_name():
+    """测试默认工作空间名称"""
+    from app.workspace import Workspace
+
+    ws = Workspace()
+    assert ws.name == "default"
+
+
+def test_workspace_custom_name():
+    """测试自定义工作空间名称"""
+    from app.workspace import Workspace
+
+    ws = Workspace("meta")
+    assert ws.name == "meta"
+
+
 if __name__ == "__main__":
-    analyzer = ModuleAnalyzer(Path("src/cli"))
+    analyzer = ModuleAnalyzer(Path("app"))
     print(analyzer.generate_report())

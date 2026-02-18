@@ -1,14 +1,13 @@
 from datetime import datetime
 from pathlib import Path
 
+from workspace import Workspace
+
 
 class Storage:
-    def __init__(self, notes_dir: str | Path | None = None):
-        if notes_dir is None:
-            root = Path(__file__).parent.parent.parent
-            notes_dir = root / "data" / "cli" / "notes"
-        self.notes_dir = Path(notes_dir)
-        self.notes_dir.mkdir(parents=True, exist_ok=True)
+    def __init__(self, workspace: Workspace | None = None):
+        self.workspace = workspace or Workspace()
+        self.notes_dir = self.workspace.get_notes_dir()
 
     def save(
         self, original: str, clarified: str, summary: str, tags: list[str] | None = None

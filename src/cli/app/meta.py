@@ -1,13 +1,13 @@
 from pathlib import Path
 
 from session_recorder import SessionRecord
-
-META_DIR = Path("data/cli/meta")
-META_DIR.mkdir(parents=True, exist_ok=True)
+from workspace import Workspace
 
 
 class Meta:
-    def __init__(self):
+    def __init__(self, workspace: Workspace | None = None):
+        self.workspace = workspace or Workspace("meta")
+        self.meta_dir = self.workspace.root
         self.analysis_result: dict = {}
 
     def analyze(self, record: SessionRecord) -> dict:
@@ -56,7 +56,7 @@ class Meta:
     def save(self, record: SessionRecord) -> Path:
         analysis = self.analyze(record)
         date_str = record.start_time.strftime("%Y-%m-%d")
-        filepath = META_DIR / f"{date_str}.md"
+        filepath = self.meta_dir / f"{date_str}.md"
 
         content = f"""---
 session_id: {analysis["session_id"]}

@@ -107,7 +107,8 @@ python main.py collect
 ## 运行测试
 
 ```bash
-python tests/test_module_checker.py
+cd src/cli
+uv run python -m pytest tests/
 ```
 
 ## 已知架构问题

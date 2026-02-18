@@ -17,7 +17,13 @@ dev = [
 ]
 
 [project.scripts]
-qtcloud = "main:app"
+qtcloud = "app.main:app"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
 
 [tool.uv]
 index-url = "https://mirrors.aliyun.com/pypi/simple"

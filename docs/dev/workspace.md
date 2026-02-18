@@ -8,59 +8,46 @@ Workspace（工作空间）是一个数据隔离单元，每个 Workspace 有独
 
 | Workspace | 用途 |
 |-----------|------|
-| `personal` | 个人思维笔记 |
+| `default` | 个人思维笔记（默认） |
 | `meta` | 系统自省数据 |
-| `department:engineering` | 工程部数据 |
-| `department:marketing` | 市场部数据 |
-
-## 核心流程
-
-```
-用户输入 → 选择 Workspace → 路由到对应存储 → 处理 → 保存
-```
 
 ## 数据结构
 
 ```
 data/
-├── personal/           # personal workspace
+├── default/            # default workspace
 │   └── notes/
-├── meta/               # meta workspace
-│   └── 2026-02-18.md
-├── engineering/        # department workspace
-│   └── notes/
-└── marketing/
-    └── notes/
+└── meta/               # meta workspace（系统自省）
 ```
 
-## 接口设计
+## 实现
 
 ```python
+# src/cli/workspace.py
 class Workspace:
-    def __init__(self, name: str):
-        self.name = name
-        self.root = Path(f"data/{name}")
+    DEFAULT = "default"
+
+    def __init__(self, name: str | None = None):
+        self.name = name or os.getenv("DEFAULT_WORKSPACE", self.DEFAULT)
+        self.root = Path("data") / self.name
 
     def get_notes_dir(self) -> Path:
         return self.root / "notes"
 
-    def save_note(self, content: str) -> Path:
-        # 保存到对应 workspace 目录
-
-    def list_notes(self) -> list[Path]:
-        # 列出当前 workspace 下的笔记
+    def get_meta_dir(self) -> Path:
+        return self.root / "meta"
 ```
 
 ## CLI 使用
 
 ```bash
-# 指定 workspace
-qtcloud collect --workspace personal
-qtcloud collect --workspace meta
-qtcloud collect --workspace engineering
+# 指定 workspace（默认 default）
+python main.py collect                    # default
+python main.py collect --workspace meta   # meta
 
-# 默认使用 personal
-qtcloud collect
+# 简写
+python main.py collect -w default
+python main.py collect -w meta
 ```
 
 ## 配置
@@ -68,5 +55,5 @@ qtcloud collect
 在 `.env` 中指定默认 Workspace：
 
 ```bash
-DEFAULT_WORKSPACE=personal
+DEFAULT_WORKSPACE=default
 ```

@@ -16,7 +16,8 @@
 ## 使用方式
 
 ```bash
-python tests/test_module_checker.py
+cd src/cli
+uv run python -m pytest tests/
 ```
 
 ## 输出示例
