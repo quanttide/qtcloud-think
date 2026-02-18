@@ -38,16 +38,12 @@ def run_collect(workspace: str = "default") -> None:
     typer.echo(f"{reflection}\n")
 
     while True:
-        user_reply = typer.prompt("请补充信息（输入 '完成' 结束澄清）")
+        user_reply = typer.prompt("请补充更多信息（输入 '完成' 结束澄清）")
         if user_reply.strip() in ("完成", "done", "finish"):
             conversation.append({"role": "user", "content": "完成了"})
             break
 
         conversation.append({"role": "user", "content": user_reply})
-
-        typer.echo("\n🪞 让我再帮你理清一下...\n")
-        reflection = clarifier.reflect(user_reply)
-        typer.echo(f"{reflection}\n")
         recorder.record_round()
 
     typer.echo("✅ 正在生成总结...\n")
