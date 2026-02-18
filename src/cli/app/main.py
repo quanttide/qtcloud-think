@@ -21,16 +21,24 @@ def run_collect(workspace: str = "default") -> None:
     clarifier = Clarifier(recorder)
     storage = Storage(ws)
 
-    typer.echo("欢迎使用思维外脑！请输入你的想法（输入 '完成' 结束）\n")
+    typer.echo("欢迎使用思维外脑！请输入你的想法（输入 '完成' 结束输入）\n")
+    typer.echo("-" * 40)
 
-    original_input = input("你的想法是什么？\n> ")
-    if original_input.strip() in ("退出", "exit", "q", "完成", "done", "finish"):
-        recorder.record_user_abandoned()
-        recorder.end_session()
+    lines = []
+    while True:
+        line = input("> ")
+        if line.strip() == "完成":
+            break
+        lines.append(line)
+
+    original_input = "\n".join(lines).strip()
+    if not original_input:
+        typer.echo("⚠️ 请输入想法")
         return
 
-    if not original_input.strip():
-        typer.echo("⚠️ 请输入想法")
+    if original_input.strip() in ("退出", "exit", "q"):
+        recorder.record_user_abandoned()
+        recorder.end_session()
         return
 
     conversation = [{"role": "user", "content": original_input}]
@@ -40,12 +48,27 @@ def run_collect(workspace: str = "default") -> None:
     typer.echo(f"{reflection}\n")
 
     while True:
-        user_reply = input("请补充更多信息（直接回车结束）\n> ")
-        if not user_reply.strip():
+        typer.echo("-" * 40)
+        typer.echo("请补充更多信息（直接回车结束，或输入 '完成' 结束输入）")
+        lines = []
+        while True:
+            line = input("> ")
+            if not line.strip():
+                break
+            if line.strip() == "完成":
+                break
+            lines.append(line)
+
+        if not lines or lines[0].strip() == "完成":
             break
 
+        user_reply = "\n".join(lines).strip()
         conversation.append({"role": "user", "content": user_reply})
         recorder.record_round()
+
+        typer.echo("\n🪞 让我再帮你理清一下...\n")
+        reflection = clarifier.reflect(user_reply)
+        typer.echo(f"{reflection}\n")
 
     typer.echo("✅ 正在生成总结...\n")
     clarified = clarifier.summarize(conversation)
