@@ -1,106 +1,94 @@
 # 开发计划：思维外脑 v0.0.x
 
-## 产品愿景
+## 核心概念：CODE 循环
 
-当人类处于默认神经网络状态时，帮助人类承载需要切换到任务正向网络的任务，使人类可以专注于放松。
+系统围绕四个核心阶段构建：
 
-核心功能：收集人类思维流，澄清想法念头，记录清晰的知识结构。
-
----
-
-## 版本目标
-
-### v0.0.1 - 2026-02-18 ✓
-- CLI 思维收集与澄清工具原型
-- `scripts/collect` 脚本支持从项目根目录运行 CLI
-- `data/` 动态数据目录约定
-- 开发指南文档 (AGENTS.md)
-
-### v0.0.2 - [开发中]
-- **目标**: 增加 meta 模块
-- **功能**: 观察自己并提出对自己的修改意见（自我反思与改进建议）
-
-### v0.0.2 开发计划
-
-#### 2.1 SessionRecorder 组件
-
-在澄清流程中收集数据，供 Meta 使用。
-
-```
-src/cli/
-├── session_recorder.py  # 新增：会话数据收集
-```
-
-数据维度：
-- 对话轮次、耗时
-- 首轮意图是否抓住核心
-- 存储是否成功
-- 用户是否中断
-- API 调用次数
-- 错误记录
-
-#### 2.2 Collector 改造
-
-修改 `collector.py`，使 `run()` 方法返回 `(Note, SessionRecord)`。
-
-#### 2.3 Meta 分析器
-
-```
-src/cli/
-├── meta.py  # 新增：Meta 自省分析
-```
-
-功能：
-- 接收 SessionRecord
-- 分析各维度数据是否异常
-- 生成改进建议
-- 输出到 `data/cli/meta/{date}.md`
-
-#### 2.4 CLI 集成
-
-在 `main.py` 中，将 Meta 集成到收集流程末尾：
-
-```
-collect 命令流程：
-1. Collector.run(input) → (Note, SessionRecord)
-2. Meta.analyze(SessionRecord)
-3. 输出笔记路径 + Meta 建议
-```
+| 阶段 | 含义 | 对应模块 |
+|------|------|----------|
+| C (Clarify) | 澄清：判断输入是否清晰，通过对话补充关键信息 | Clarifier |
+| O (Organize) | 联想：寻找想法之间的关联 | 待实现 |
+| D (Distill) | 精炼：压缩和遗忘原始想法，形成更精炼的思考 | 待实现 |
+| E (Express) | 表达：输出可沉淀的知识 | Storage |
 
 ---
 
-### Phase 3：前端界面（可选）
+## 信息状态
 
-- Web 界面或桌面端
-- 提升交互体验
+AI 澄清后的输出需经过用户决策才能沉淀：
+
+| 状态 | 含义 | 存储位置 |
+|------|------|----------|
+| 接收 | 认可澄清结果，存入长期记忆 | `notes/received/` |
+| 拒绝 | 不认可，可选择填写原因 | `notes/rejected/` |
+| 悬疑 | 暂时无法判断，暂存待定 | `notes/pending/` |
+
+悬疑内容可通过命令召回重新决策。
 
 ---
 
-## 运行方式
+### v0.0.3 - [开发中]
 
-```bash
-cd src/cli
-pip install -r requirements.txt
-python main.py collect
+**目标**：增加用户反馈功能 + 信息状态分类
+
+**功能**：AI 澄清后用户可选择接收/拒绝/悬疑，分类存储
+
+---
+
+#### 2.1 Storage 分类存储
+
+修改 `storage.py`，支持按状态分类存储：
+
+```
+data/{workspace}/
+├── notes/
+│   ├── received/   # 接收的笔记
+│   ├── pending/   # 悬疑待定
+│   └── rejected/  # 拒绝的笔记
+└── sessions/
 ```
 
----
+- `save()` 方法增加 `status` 参数（received/pending/rejected）
+- 新增 `list_pending()` 方法列出待定内容
 
-## 验证指标
+#### 2.2 Clarifier 结构调整
 
-- **转化率**：多少输入最终被成功存储？
-- **澄清轮数**：平均几轮对话能澄清一个想法？
-- **召回测试**：存储后的笔记能否被语义搜索召回？
-- **用户主观**：事后看澄清后的内容，是否比原始输入更清晰？
+- `summarize()` 方法返回结构化数据（dict），而非纯文本
+- 结构：`{ summary: str, content: str, original: str }`
+
+#### 2.3 Main.collect 用户决策
+
+澄清后询问用户决策：
+
+```
+🤖 澄清结果：
+[内容展示]
+
+请选择：
+1. 接收 - 存入长期记忆
+2. 拒绝 - 丢弃（可填写原因）
+3. 悬疑 - 暂存待定
+```
+
+#### 2.4 Pending 召回命令
+
+新增命令：`pending` 或 `review`
+
+- 列出 pending 目录中的内容
+- 支持对每条内容重新决策（接收/拒绝/删除）
+
+#### 2.5 Meta 模块（待定）
+
+观察自己并提出改进建议，优先级取决于开发需求。
 
 ---
 
 ## 下一步
 
-- [ ] 实现 SessionRecorder 组件
-- [ ] 改造 Collector 返回 SessionRecord
-- [ ] 实现 Meta 分析器
-- [ ] CLI 集成 Meta
+- [ ] Storage 分类存储
+- [ ] Clarifier 返回结构化数据
+- [ ] Main.collect 用户决策交互
+- [ ] Pending 召回命令
 
 ---
 
@@ -130,3 +118,5 @@ uv run python -m pytest tests/
 详见 [Meta 模块设计](./meta.md)
 
 详见 [Collector 收集器设计](./collector.md)
+
+详见 [信息状态设计](./status.md)

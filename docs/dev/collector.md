@@ -38,8 +38,10 @@ class Collector:
     def ask_clarification(self, original: str, issues: list[str]) -> str:
         """追问用户，收集更多信息"""
 
-    def summarize(self, conversation: list[dict]) -> str:
-        """总结对话，生成结构化内容"""
+    def summarize(self, conversation: list[dict]) -> dict:
+        """总结对话，生成结构化内容
+        返回: {"summary": str, "content": str, "original": str}
+        """
 ```
 
 ---

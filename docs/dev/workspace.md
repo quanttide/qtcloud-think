@@ -16,9 +16,15 @@ Workspace（工作空间）是一个数据隔离单元，每个 Workspace 有独
 ```
 data/
 ├── default/            # default workspace
-│   └── notes/
-└── meta/               # meta workspace（系统自省）
+│   ├── notes/
+│   │   ├── received/   # 接收的笔记
+│   │   ├── pending/    # 悬疑待定
+│   │   └── rejected/  # 拒绝的笔记
+│   └── sessions/      # 会话记录
+└── meta/              # meta workspace（系统自省）
 ```
+
+详见 [信息状态设计](./status.md)。
 
 ## 实现
 
