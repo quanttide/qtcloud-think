@@ -21,14 +21,16 @@ def run_collect(workspace: str = "default") -> None:
     clarifier = Clarifier(recorder)
     storage = Storage(ws)
 
-    typer.echo(
-        "欢迎使用思维外脑！请输入你的想法，我来帮你理清思路（输入 '完成' 结束）\n"
-    )
+    typer.echo("欢迎使用思维外脑！请输入你的想法（输入 '完成' 结束）\n")
 
-    original_input = typer.prompt("你的想法是什么？")
-    if original_input.strip() in ("退出", "exit", "q"):
+    original_input = input("你的想法是什么？\n> ")
+    if original_input.strip() in ("退出", "exit", "q", "完成", "done", "finish"):
         recorder.record_user_abandoned()
         recorder.end_session()
+        return
+
+    if not original_input.strip():
+        typer.echo("⚠️ 请输入想法")
         return
 
     conversation = [{"role": "user", "content": original_input}]
@@ -38,11 +40,8 @@ def run_collect(workspace: str = "default") -> None:
     typer.echo(f"{reflection}\n")
 
     while True:
-        user_reply = typer.prompt("请补充更多信息（输入 '完成' 结束澄清）")
+        user_reply = input("请补充更多信息（直接回车结束）\n> ")
         if not user_reply.strip():
-            break
-        if user_reply.strip() in ("完成", "done", "finish"):
-            conversation.append({"role": "user", "content": "完成了"})
             break
 
         conversation.append({"role": "user", "content": user_reply})
