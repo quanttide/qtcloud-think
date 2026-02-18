@@ -39,6 +39,8 @@ def run_collect(workspace: str = "default") -> None:
 
     while True:
         user_reply = typer.prompt("请补充更多信息（输入 '完成' 结束澄清）")
+        if not user_reply.strip():
+            break
         if user_reply.strip() in ("完成", "done", "finish"):
             conversation.append({"role": "user", "content": "完成了"})
             break
