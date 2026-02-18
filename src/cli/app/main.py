@@ -73,8 +73,18 @@ def run_collect(workspace: str = "default") -> None:
         elif in_content:
             content += "\n" + line
 
-    filepath = storage.save(original_input, content.strip(), summary)
+    filepath = storage.save(
+        original_input,
+        content.strip(),
+        summary,
+        session_record=recorder.record.to_dict(),
+    )
+
+    # 保存对话历史
+    storage.save_conversation(conversation, summary, session_id)
+
     recorder.record_storage(True, str(filepath))
+    recorder.end_session()
 
     typer.echo(f"✅ 已保存到: {filepath}")
     typer.echo(f"\n摘要: {summary}")
@@ -103,25 +113,147 @@ def meta(
     ),
 ):
     """触发 Meta 自省分析"""
+    import json
+
+    from clarifier import Clarifier
     from session_recorder import SessionRecord
 
-    ws = Workspace(workspace)
-    meta_obj = Meta(ws)
+    target_ws = Workspace(workspace)
+    meta_obj = Meta()
 
-    typer.echo(f"📊 正在分析工作空间: {ws.name}\n")
+    typer.echo(f"📊 正在分析工作空间: {target_ws.name}\n")
 
-    notes_dir = ws.get_notes_dir()
-    if not notes_dir.exists() or not list(notes_dir.glob("*.md")):
-        typer.echo("⚠️ 该工作空间没有笔记数据")
+    sessions_dir = target_ws.get_notes_dir().parent / "sessions"
+    if not sessions_dir.exists():
+        typer.echo(f"⚠️ 工作空间 '{target_ws.name}' 没有会话数据")
         return
 
-    sample_record = SessionRecord(session_id="manual-trigger")
-    sample_record.rounds = 1
-    sample_record.api_calls = 1
+    # 读取会话记录和对话历史
+    sessions = []
+    conversations = []
 
-    filepath = meta_obj.save(sample_record)
+    for f in sessions_dir.glob("session_*.json"):
+        data = json.loads(f.read_text(encoding="utf-8"))
+        sessions.append(SessionRecord.from_dict(data))
 
-    typer.echo(f"✅ Meta 自省报告已生成: {filepath}")
+    for f in sessions_dir.glob("conversation_*.json"):
+        data = json.loads(f.read_text(encoding="utf-8"))
+        conversations.append(data)
+
+    if not sessions or not conversations:
+        typer.echo(f"⚠️ 工作空间 '{target_ws.name}' 没有会话数据")
+        return
+
+    # 汇总分析
+    total_rounds = sum(s.rounds for s in sessions)
+    total_api_calls = sum(s.api_calls for s in sessions)
+    total_duration = sum(s.duration for s in sessions)
+    abandoned_count = sum(1 for s in sessions if s.user_abandoned)
+    storage_failed_count = sum(1 for s in sessions if not s.storage_success)
+
+    avg_rounds = total_rounds / len(sessions)
+    avg_api_calls = total_api_calls / len(sessions)
+    avg_duration = total_duration / len(sessions)
+
+    # 异常检测
+    issues = []
+    suggestions = []
+
+    if avg_rounds > 5:
+        issues.append(f"平均澄清轮次过多: {avg_rounds:.1f}")
+        suggestions.append("建议优化首轮意图识别，减少澄清轮次")
+
+    if avg_duration > 120:
+        issues.append(f"平均耗时过长: {avg_duration:.1f}s")
+        suggestions.append("建议检查 LLM 响应速度")
+
+    if avg_api_calls > 10:
+        issues.append(f"平均 API 调用过多: {avg_api_calls:.1f}")
+        suggestions.append("建议合并 API 调用或优化逻辑")
+
+    if abandoned_count > 0:
+        issues.append(f"用户中断次数: {abandoned_count}/{len(sessions)}")
+        suggestions.append("追问方式可能不够友好，需要优化")
+
+    if storage_failed_count > 0:
+        issues.append(f"存储失败次数: {storage_failed_count}/{len(sessions)}")
+        suggestions.append("检查存储路径和权限")
+
+    # 语义分析（使用 LLM）
+    typer.echo("🔍 正在进行语义分析...\n")
+
+    conversation_texts = []
+    for conv in conversations[:5]:  # 分析最近5次对话
+        summary = conv.get("summary", "")
+        msgs = conv.get("conversation", [])
+        conversation_texts.append(f"总结: {summary}\n对话: {msgs}")
+
+    if conversation_texts:
+        analysis_prompt = f"""你是一个系统自省助手。请分析以下用户对话，总结系统的表现和改进建议。
+
+对话摘要：
+{chr(10).join(conversation_texts)}
+
+请返回 JSON 格式：
+{{
+    "strengths": ["系统优点1", "系统优点2"],
+    "weaknesses": ["需要改进的地方1", "需要改进的地方2"],
+    "suggestions": ["具体改进建议1", "具体改进建议2"]
+}}"""
+
+        try:
+            clarifier = Clarifier()
+            result = clarifier.client.chat_once(
+                "你是一个系统自省分析师，擅长分析对话并给出改进建议。直接返回 JSON，不要有其他内容。",
+                analysis_prompt,
+            )
+            llm_result = json.loads(result.strip().strip("```json").strip("```"))
+            suggestions.extend(llm_result.get("suggestions", []))
+        except Exception:
+            pass
+
+    # 生成报告（duration 是计算属性，通过 start_time/end_time 自动计算）
+    from datetime import datetime, timedelta
+
+    record = SessionRecord(
+        session_id="meta-analysis",
+        start_time=datetime.now() - timedelta(seconds=int(total_duration)),
+        end_time=datetime.now(),
+    )
+    record.rounds = total_rounds
+    record.api_calls = total_api_calls
+
+    filepath = meta_obj.save(
+        record,
+        analysis={
+            "session_count": len(sessions),
+            "avg_rounds": avg_rounds,
+            "avg_api_calls": avg_api_calls,
+            "avg_duration": avg_duration,
+            "abandoned_count": abandoned_count,
+            "storage_failed_count": storage_failed_count,
+            "issues": issues,
+            "suggestions": suggestions,
+        },
+    )
+
+    # 输出摘要
+    typer.echo(f"📈 分析了 {len(sessions)} 次会话\n")
+    typer.echo(f"平均轮次: {avg_rounds:.1f}")
+    typer.echo(f"平均 API 调用: {avg_api_calls:.1f}")
+    typer.echo(f"平均耗时: {avg_duration:.1f}s")
+
+    if issues:
+        typer.echo("\n⚠️ 发现问题:")
+        for issue in issues:
+            typer.echo(f"  - {issue}")
+
+    if suggestions:
+        typer.echo("\n💡 改进建议:")
+        for suggestion in suggestions:
+            typer.echo(f"  - {suggestion}")
+
+    typer.echo(f"\n✅ Meta 自省报告已生成: {filepath}")
 
 
 if __name__ == "__main__":

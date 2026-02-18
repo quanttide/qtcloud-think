@@ -53,32 +53,49 @@ class Meta:
         }
         return self.analysis_result
 
-    def save(self, record: SessionRecord) -> Path:
-        analysis = self.analyze(record)
+    def save(self, record: SessionRecord, analysis: dict | None = None) -> Path:
+        if analysis is None:
+            analysis = self.analyze(record)
+
         date_str = record.start_time.strftime("%Y-%m-%d")
         filepath = self.meta_dir / f"{date_str}.md"
 
+        # 汇总数据（如果 analysis 包含）
+        session_count = analysis.get("session_count", 1)
+        avg_rounds = analysis.get("avg_rounds", record.rounds)
+        avg_api_calls = analysis.get("avg_api_calls", record.api_calls)
+        avg_duration = analysis.get("avg_duration", record.duration)
+        issues = analysis.get("issues", [])
+        suggestions = analysis.get("suggestions", [])
+
         content = f"""---
-session_id: {analysis["session_id"]}
-date: {analysis["date"]}
-rounds: {analysis["rounds"]}
-duration: {analysis["duration"]:.1f}s
-api_calls: {analysis["api_calls"]}
+date: {date_str}
+session_count: {session_count}
+avg_rounds: {avg_rounds:.1f}
+avg_api_calls: {avg_api_calls:.1f}
+avg_duration: {avg_duration:.1f}s
 ---
 
 # Meta 自省报告
 
-## 整体评估
+## 汇总统计
+- 会话总数: {session_count}
+- 平均澄清轮次: {avg_rounds:.1f}
+- 平均 API 调用: {avg_api_calls:.1f}
+- 平均耗时: {avg_duration:.1f}s
+
+## 发现问题
 """
 
-        if analysis["issues"]:
-            content += f"- 发现问题: {', '.join(analysis['issues'])}\n"
+        if issues:
+            for issue in issues:
+                content += f"- {issue}\n"
         else:
             content += "- 运行正常\n"
 
         content += "\n## 改进建议\n"
-        if analysis["suggestions"]:
-            for i, suggestion in enumerate(analysis["suggestions"], 1):
+        if suggestions:
+            for i, suggestion in enumerate(suggestions, 1):
                 content += f"{i}. {suggestion}\n"
         else:
             content += "- 无\n"

@@ -2,6 +2,23 @@ import json
 from llm_client import get_client
 from session_recorder import SessionRecorder, SessionRecord
 
+SYSTEM_PROMPT = """你是"思维外脑"——一个思维收集与澄清助手。
+
+## 你的身份
+- 你是一个 AI 助手，帮助用户理清思路、沉淀思考
+- 你的目标是帮助用户把碎片化的想法转化为结构化的知识
+
+## 你的能力
+- 判断用户输入是否清晰完整
+- 通过对话引导用户补充关键信息
+- 将澄清后的想法总结成结构化内容
+
+## 你的原则
+- 保持友好、自然的对话风格
+- 不给用户压力，像朋友聊天一样帮助他们
+- 每次只问 1-2 个关键问题
+- 用户不想说时不要追问"""
+
 CLARITY_PROMPT = """你是一个思维澄清助手。你的任务是判断用户的输入是否足够清晰，可以被理解和处理。
 
 判断标准（必须全部满足才算"清晰"）：
@@ -36,7 +53,9 @@ class Clarifier:
 
     def check_clarity(self, text: str) -> dict:
         user_msg = f"请判断以下内容是否清晰：\n\n{text}"
-        response = self.client.chat_once(CLARITY_PROMPT, user_msg)
+        response = self.client.chat_once(
+            SYSTEM_PROMPT + "\n\n" + CLARITY_PROMPT, user_msg
+        )
         if self.recorder:
             self.recorder.record_api_call()
 
@@ -54,13 +73,15 @@ class Clarifier:
         user_msg = CLARIFICATION_PROMPT.format(
             original=original, issues=", ".join(issues)
         )
-        response = self.client.chat_once("你是一个友好的思维对话助手。", user_msg)
+        response = self.client.chat_once(SYSTEM_PROMPT + "\n\n" + user_msg, "")
         if self.recorder:
             self.recorder.record_api_call()
         return response
 
     def summarize(self, conversation: list[dict]) -> str:
-        system = """请根据对话内容，生成一段清晰、连贯的总结。
+        system = SYSTEM_PROMPT + """
+
+请根据对话内容，生成一段清晰、连贯的总结。
 
 输出格式（Markdown）：
 ---

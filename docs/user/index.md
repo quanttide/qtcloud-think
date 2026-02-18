@@ -3,8 +3,12 @@
 ## 快速开始
 
 ```bash
+# 使用 scripts（推荐）
+./scripts/collect
+
+# 或直接运行
 cd src/cli
-python app/main.py collect
+uv run python app/main.py collect
 ```
 
 ---
@@ -14,22 +18,27 @@ python app/main.py collect
 ### collect - 收集思维
 
 ```bash
-# 使用默认工作空间（default）
-python app/main.py collect
+# 使用 scripts
+./scripts/collect
+./scripts/collect -w meta
 
-# 指定工作空间
-python app/main.py collect -w default
-python app/main.py collect --workspace meta
+# 或直接运行
+cd src/cli
+uv run python app/main.py collect
+uv run python app/main.py collect -w meta
 ```
 
 ### meta - 系统自省
 
 ```bash
 # 触发 Meta 分析
-python app/main.py meta
+./scripts/collect meta
+./scripts/collect meta -w default
 
-# 分析指定工作空间
-python app/main.py meta -w default
+# 或直接运行
+cd src/cli
+uv run python app/main.py meta
+uv run python app/main.py meta -w default
 ```
 
 ---

@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
 
 
@@ -25,6 +25,23 @@ class SessionRecord:
     def duration(self) -> float:
         end = self.end_time or datetime.now()
         return (end - self.start_time).total_seconds()
+
+    def to_dict(self) -> dict:
+        """序列化为字典"""
+        data = asdict(self)
+        data["start_time"] = self.start_time.isoformat()
+        if self.end_time:
+            data["end_time"] = self.end_time.isoformat()
+        return data
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "SessionRecord":
+        """从字典反序列化"""
+        if isinstance(data.get("start_time"), str):
+            data["start_time"] = datetime.fromisoformat(data["start_time"])
+        if isinstance(data.get("end_time"), str):
+            data["end_time"] = datetime.fromisoformat(data["end_time"])
+        return cls(**data)
 
 
 class SessionRecorder:
