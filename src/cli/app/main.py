@@ -145,12 +145,13 @@ def run_collect(workspace: str = "default") -> None:
     recorder.record_storage(True, str(filepath))
     recorder.end_session()
 
-    if status == "received":
-        typer.echo(f"✅ 已保存到长期记忆: {filepath}")
-    elif status == "pending":
-        typer.echo(f"⏳ 已暂存到待定: {filepath}")
-    elif status == "rejected":
-        typer.echo(f"❌ 已拒绝: {filepath}")
+    typer.echo("\n" + "=" * 40)
+    typer.echo("📝 已保存：")
+    typer.echo("=" * 40)
+    typer.echo(f"\n摘要：{summary}\n")
+    typer.echo("-" * 40)
+    typer.echo(f"内容：\n{content}\n")
+    typer.echo("=" * 40)
 
     typer.echo(f"\n摘要: {summary}")
 
