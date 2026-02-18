@@ -57,12 +57,19 @@ def run_collect(workspace: str = "default") -> None:
 
     while True:
         choice = typer.prompt(
-            "\n请选择：\n1. 补充更多信息\n2. 已有足够信息，结束澄清\n请输入 1/2",
+            "\n请选择：\n1. 补充更多信息\n2. 已有足够信息，结束澄清\n3. 换一个说法\n请输入 1/2/3",
             default="2",
         ).strip()
 
         if choice == "2" or not choice:
             break
+
+        if choice == "3":
+            typer.echo("\n🪞 让我换个角度...\n")
+            reflection = clarifier.reflect(original_input)
+            typer.echo(f"{reflection}\n")
+            conversation.append({"role": "assistant", "content": reflection})
+            continue
 
         user_reply = read_multiline("请补充")
         if not user_reply:
@@ -71,10 +78,30 @@ def run_collect(workspace: str = "default") -> None:
         conversation.append({"role": "user", "content": user_reply})
         recorder.record_round()
 
-        typer.echo("\n🪞 让我再帮你理清一下...\n")
-        reflection = clarifier.reflect(user_reply)
-        typer.echo(f"{reflection}\n")
-        conversation.append({"role": "assistant", "content": reflection})
+        while True:
+            typer.echo("\n🪞 让我再帮你理清一下...\n")
+            reflection = clarifier.reflect(user_reply)
+            typer.echo(f"{reflection}\n")
+
+            sub_choice = typer.prompt(
+                "\n请选择：\n1. 换一个说法\n2. 继续补充\n3. 已有足够信息，结束澄清\n请输入 1/2/3",
+                default="3",
+            ).strip()
+
+            if sub_choice == "3" or not sub_choice:
+                conversation.append({"role": "assistant", "content": reflection})
+                break
+
+            if sub_choice == "1":
+                continue
+
+            if sub_choice == "2":
+                more_reply = read_multiline("请补充")
+                if more_reply:
+                    conversation.append({"role": "assistant", "content": reflection})
+                    conversation.append({"role": "user", "content": more_reply})
+                    recorder.record_round()
+                continue
 
     typer.echo("✅ 正在生成总结...\n")
     clarified = clarifier.summarize(conversation)
