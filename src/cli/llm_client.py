@@ -13,17 +13,23 @@ class LLMClient:
         )
         self.model = os.getenv("LLM_MODEL", "qwen3.5-plus")
 
-    def chat(self, messages: list[dict], **kwargs) -> str:
+    def chat(
+        self, messages: list[dict], enable_thinking: bool = False, **kwargs
+    ) -> str:
         response = self.client.chat.completions.create(
             model=self.model,
             messages=messages,
+            extra_body={"enable_thinking": enable_thinking},
             **kwargs,
         )
         return response.choices[0].message.content
 
-    def chat_once(self, system: str, user: str, **kwargs) -> str:
+    def chat_once(
+        self, system: str, user: str, enable_thinking: bool = False, **kwargs
+    ) -> str:
         return self.chat(
             [{"role": "system", "content": system}, {"role": "user", "content": user}],
+            enable_thinking=enable_thinking,
             **kwargs,
         )
 
