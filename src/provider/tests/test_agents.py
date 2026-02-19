@@ -1,12 +1,12 @@
 import pytest
 from unittest.mock import MagicMock, patch
 
-from agents.base import Agent
-from agents.sower import Sower
-from agents.observer import Observer, METRICS
-from skills.clarify import ClarifySkill
-from skills.organize import OrganizeSkill
-from skills.distill import DistillSkill
+from app.agents.base import Agent
+from app.agents.sower import Sower
+from app.agents.observer import Observer, METRICS
+from app.skills.clarify import ClarifySkill
+from app.skills.organize import OrganizeSkill
+from app.skills.distill import DistillSkill
 
 
 class TestAgentBase:
@@ -23,7 +23,7 @@ class TestSower:
         assert "O" in sower.skills
         assert "D" in sower.skills
 
-    @patch("skills.clarify.get_client")
+    @patch("app.skills.clarify.get_client")
     def test_sower_clarify(self, mock_get_client):
         mock_client = MagicMock()
         mock_client.chat_once.return_value = "clarified content"
@@ -34,7 +34,7 @@ class TestSower:
         assert result == "clarified content"
         mock_client.chat_once.assert_called_once()
 
-    @patch("skills.organize.get_client")
+    @patch("app.skills.organize.get_client")
     def test_sower_organize(self, mock_get_client):
         mock_client = MagicMock()
         mock_client.chat_once.return_value = "organized"
@@ -45,7 +45,7 @@ class TestSower:
         result = sower.organize(notes)
         assert result == ""  # TODO: implement
 
-    @patch("skills.distill.get_client")
+    @patch("app.skills.distill.get_client")
     def test_sower_distill(self, mock_get_client):
         mock_client = MagicMock()
         mock_client.chat_once.return_value = "distilled"
@@ -79,7 +79,7 @@ class TestObserver:
         expected = ["clarity", "completeness", "depth", "coherence", "relevance"]
         assert METRICS == expected
 
-    @patch("agents.observer.get_client")
+    @patch("app.agents.observer.get_client")
     def test_observer_evaluate(self, mock_get_client):
         mock_client = MagicMock()
         mock_get_client.return_value = mock_client

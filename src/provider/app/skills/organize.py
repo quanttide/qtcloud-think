@@ -1,4 +1,4 @@
-from infrastructure.llm_client import get_client
+from app.infrastructure.llm_client import get_client
 
 
 class OrganizeSkill:

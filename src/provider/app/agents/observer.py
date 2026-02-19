@@ -1,5 +1,5 @@
-from agents.base import Agent
-from infrastructure.llm_client import get_client
+from app.agents.base import Agent
+from app.infrastructure.llm_client import get_client
 
 METRICS = ["clarity", "completeness", "depth", "coherence", "relevance"]
 

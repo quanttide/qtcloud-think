@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-from agents.base import Agent
-from skills.clarify import ClarifySkill
-from skills.organize import OrganizeSkill
-from skills.distill import DistillSkill
-from skills.express import ExpressSkill
-from infrastructure import SessionRecorder, Storage
+from app.agents.base import Agent
+from app.skills.clarify import ClarifySkill
+from app.skills.organize import OrganizeSkill
+from app.skills.distill import DistillSkill
+from app.skills.express import ExpressSkill
+from app.infrastructure import SessionRecorder, Storage
 
-from .observer import Observer
+from app.agents.observer import Observer
 
 
 class Sower(Agent):

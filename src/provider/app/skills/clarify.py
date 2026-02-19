@@ -1,4 +1,4 @@
-from infrastructure.llm_client import get_client
+from app.infrastructure.llm_client import get_client
 
 
 class ClarifySkill:
@@ -8,7 +8,7 @@ class ClarifySkill:
         self.client = get_client()
 
     def execute(self, original: str) -> str:
-        from infrastructure.prompts import CLARIFICATION_PROMPT, SYSTEM_PROMPT
+        from app.infrastructure.prompts import CLARIFICATION_PROMPT, SYSTEM_PROMPT
 
         user_msg = CLARIFICATION_PROMPT.format(original=original)
         return self.client.chat_once(SYSTEM_PROMPT + "\n\n" + user_msg, "")
