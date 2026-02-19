@@ -1,0 +1,10 @@
+#!/bin/bash
+# 启动 Studio 移动端应用
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+STUDIO_DIR="$PROJECT_ROOT/src/studio"
+
+cd "$STUDIO_DIR"
+
+flutter run "$@"

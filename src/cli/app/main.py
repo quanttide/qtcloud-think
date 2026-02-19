@@ -1,14 +1,35 @@
+import os
 import uuid
 
 import typer
+from api_client import APIClient, get_client
 from clarifier import Clarifier
 from meta import Meta
-from prompts import META_ANALYSIS_PROMPT
 from session_recorder import SessionRecorder
 from storage import Storage
 from workspace import Workspace
 
 app = typer.Typer(help="思维收集与澄清工具")
+
+OFFLINE_MODE = os.getenv("OFFLINE_MODE", "false").lower() == "true"
+
+
+def get_clarifier(recorder: SessionRecorder | None = None) -> Clarifier:
+    return Clarifier(recorder)
+
+
+def get_api_client() -> APIClient | None:
+    if OFFLINE_MODE:
+        return None
+    try:
+        client = get_client()
+        if client.is_available():
+            return client
+        typer.echo("⚠️ Provider 不可用，将使用离线模式")
+        return None
+    except Exception:
+        typer.echo("⚠️ 无法连接 Provider，将使用离线模式")
+        return None
 
 
 def read_multiline(prompt_text: str) -> str:
@@ -38,7 +59,10 @@ def run_collect(workspace: str = "default") -> None:
 
     session_id = str(uuid.uuid4())
     recorder = SessionRecorder(session_id)
-    clarifier = Clarifier(recorder)
+
+    api_client = get_api_client()
+    use_api = api_client is not None
+
     storage = Storage(ws)
 
     typer.echo("欢迎使用思维外脑！\n")
@@ -51,7 +75,14 @@ def run_collect(workspace: str = "default") -> None:
     conversation = [{"role": "user", "content": original_input}]
 
     typer.echo("\n🪞 让我复述一下你的想法...\n")
-    reflection = clarifier.reflect(original_input)
+
+    if use_api:
+        reflection = api_client.reflect(original_input)
+    else:
+        clarifier = get_clarifier(recorder)
+        reflection = clarifier.reflect(original_input)
+        recorder.record_api_call()
+
     typer.echo(f"{reflection}\n")
     conversation.append({"role": "assistant", "content": reflection})
 
@@ -66,7 +97,12 @@ def run_collect(workspace: str = "default") -> None:
 
         if choice == "3":
             typer.echo("\n🪞 让我换个角度...\n")
-            reflection = clarifier.reflect(original_input)
+            if use_api:
+                reflection = api_client.reflect(original_input)
+            else:
+                clarifier = get_clarifier(recorder)
+                reflection = clarifier.reflect(original_input)
+                recorder.record_api_call()
             typer.echo(f"{reflection}\n")
             conversation.append({"role": "assistant", "content": reflection})
             continue
@@ -80,7 +116,12 @@ def run_collect(workspace: str = "default") -> None:
 
         while True:
             typer.echo("\n🪞 让我再帮你理清一下...\n")
-            reflection = clarifier.reflect(user_reply)
+            if use_api:
+                reflection = api_client.continue_dialogue(conversation)
+            else:
+                clarifier = get_clarifier(recorder)
+                reflection = clarifier.continue_dialogue(conversation)
+                recorder.record_api_call()
             typer.echo(f"{reflection}\n")
 
             sub_choice = typer.prompt(
@@ -104,7 +145,13 @@ def run_collect(workspace: str = "default") -> None:
                 continue
 
     typer.echo("✅ 正在生成总结...\n")
-    clarified = clarifier.summarize(conversation)
+
+    if use_api:
+        clarified = api_client.summarize(conversation)
+    else:
+        clarifier = get_clarifier(recorder)
+        clarified = clarifier.summarize(conversation)
+        recorder.record_api_call()
 
     summary = clarified.get("summary", "")
     content = clarified.get("content", "")
@@ -138,12 +185,22 @@ def run_collect(workspace: str = "default") -> None:
             recorder.record_round()
 
             typer.echo("\n💭 让我想想...\n")
-            response = clarifier.continue_dialogue(conversation)
+            if use_api:
+                response = api_client.continue_dialogue(conversation)
+            else:
+                clarifier = get_clarifier(recorder)
+                response = clarifier.continue_dialogue(conversation)
+                recorder.record_api_call()
             typer.echo(f"{response}\n")
             conversation.append({"role": "assistant", "content": response})
 
             typer.echo("✅ 正在更新总结...\n")
-            clarified = clarifier.summarize(conversation)
+            if use_api:
+                clarified = api_client.summarize(conversation)
+            else:
+                clarifier = get_clarifier(recorder)
+                clarified = clarifier.summarize(conversation)
+                recorder.record_api_call()
             summary = clarified.get("summary", "")
             content = clarified.get("content", "")
             continue
@@ -180,18 +237,28 @@ def run_collect(workspace: str = "default") -> None:
         else:
             typer.echo("⚠️ 请输入 1、2、3、4 或 5")
 
-    filepath = storage.save(
-        original_input,
-        content,
-        summary,
-        session_record=recorder.record.to_dict(),
-        status=status,
-        rejection_reason=rejection_reason,
-    )
+    if use_api:
+        api_client.create_note(
+            original=original_input,
+            content=content,
+            summary=summary,
+            status=status,
+            session_record=recorder.record.to_dict(),
+            session_id=session_id,
+            rejection_reason=rejection_reason,
+        )
+    else:
+        filepath = storage.save(
+            original_input,
+            content,
+            summary,
+            session_record=recorder.record.to_dict(),
+            status=status,
+            rejection_reason=rejection_reason,
+        )
+        storage.save_conversation(conversation, summary, session_id)
+        recorder.record_storage(True, str(filepath))
 
-    storage.save_conversation(conversation, summary, session_id)
-
-    recorder.record_storage(True, str(filepath))
     recorder.end_session()
 
     typer.echo("\n" + "=" * 40)
@@ -204,6 +271,9 @@ def run_collect(workspace: str = "default") -> None:
 
     typer.echo(f"\n摘要: {summary}")
 
+    if api_client:
+        api_client.close()
+
 
 @app.command()
 def pending(
@@ -215,9 +285,28 @@ def pending(
     ),
 ):
     """列出所有悬疑待定的内容"""
+    api_client = get_api_client()
+
+    if api_client and api_client.is_available():
+        try:
+            pending_notes = api_client.list_pending(workspace)
+            if not pending_notes:
+                typer.echo("📭 当前没有悬疑待定的内容")
+                return
+            typer.echo(f"📋 悬疑待定内容 ({len(pending_notes)} 条)：\n")
+            for i, note in enumerate(pending_notes, 1):
+                typer.echo(f"{i}. {note['summary']}")
+                typer.echo(f"   ID: {note['id']}")
+                typer.echo(f"   创建时间: {note['created']}")
+                typer.echo(f"   原始输入: {note['original'][:50]}...")
+                typer.echo()
+            api_client.close()
+            return
+        except Exception:
+            pass
+
     ws = Workspace(workspace)
     storage = Storage(ws)
-
     pending_notes = storage.list_pending()
 
     if not pending_notes:
@@ -244,9 +333,68 @@ def review(
     ),
 ):
     """对悬疑待定内容进行重新决策"""
+    api_client = get_api_client()
+
+    if api_client and api_client.is_available():
+        try:
+            pending_notes = api_client.list_pending(workspace)
+            if not pending_notes:
+                typer.echo("📭 当前没有悬疑待定的内容")
+                return
+
+            typer.echo(f"📋 悬疑待定内容 ({len(pending_notes)} 条)：\n")
+
+            for i, note in enumerate(pending_notes, 1):
+                typer.echo(f"\n{'=' * 40}")
+                typer.echo(f"{i}. {note['summary']}")
+                typer.echo(f"   原始输入: {note['original']}")
+                typer.echo("=" * 40)
+
+                while True:
+                    choice = typer.prompt(
+                        "\n请选择：\n"
+                        "1. 接收 - 存入长期记忆\n"
+                        "2. 拒绝 - 丢弃（可填写原因）\n"
+                        "3. 跳过 - 保留在待定\n"
+                        "请输入 1/2/3",
+                        default="3",
+                    ).strip()
+
+                    if choice in ("1", "接收"):
+                        api_client.update_note_status(
+                            note["id"], "received", workspace=workspace
+                        )
+                        typer.echo("✅ 已接收，移至长期记忆")
+                        break
+                    elif choice in ("2", "拒绝"):
+                        reason_choice = (
+                            typer.prompt("是否填写拒绝原因？(y/n)", default="n")
+                            .strip()
+                            .lower()
+                        )
+                        if reason_choice in ("y", "是"):
+                            rejection_reason = typer.prompt("请输入拒绝原因")
+                        else:
+                            rejection_reason = None
+                        api_client.update_note_status(
+                            note["id"], "rejected", rejection_reason, workspace
+                        )
+                        typer.echo("❌ 已拒绝")
+                        break
+                    elif choice in ("3", "跳过"):
+                        typer.echo("⏭️ 跳过")
+                        break
+                    else:
+                        typer.echo("⚠️ 请输入 1、2 或 3")
+
+            api_client.close()
+            typer.echo("\n✅ 审查完成")
+            return
+        except Exception:
+            pass
+
     ws = Workspace(workspace)
     storage = Storage(ws)
-
     pending_notes = storage.list_pending()
 
     if not pending_notes:
@@ -332,9 +480,34 @@ def meta(
     ),
 ):
     """触发 Meta 自省分析"""
-    import json
+    api_client = get_api_client()
 
-    from clarifier import Clarifier
+    if api_client and api_client.is_available():
+        try:
+            result = api_client.analyze_meta(workspace)
+            typer.echo(f"📈 分析了 {result.get('session_count', 0)} 次会话\n")
+            typer.echo(f"平均轮次: {result.get('avg_rounds', 0):.1f}")
+            typer.echo(f"平均 API 调用: {result.get('avg_api_calls', 0):.1f}")
+            typer.echo(f"平均耗时: {result.get('avg_duration', 0):.1f}s")
+
+            if result.get("issues"):
+                typer.echo("\n⚠️ 发现问题:")
+                for issue in result["issues"]:
+                    typer.echo(f"  - {issue}")
+
+            if result.get("suggestions"):
+                typer.echo("\n💡 改进建议:")
+                for suggestion in result["suggestions"]:
+                    typer.echo(f"  - {suggestion}")
+
+            api_client.close()
+            return
+        except Exception:
+            pass
+
+    import json
+    from datetime import datetime, timedelta
+
     from session_recorder import SessionRecord
 
     target_ws = Workspace(workspace)
@@ -347,7 +520,6 @@ def meta(
         typer.echo(f"⚠️ 工作空间 '{target_ws.name}' 没有会话数据")
         return
 
-    # 读取会话记录和对话历史
     sessions = []
     conversations = []
 
@@ -363,7 +535,6 @@ def meta(
         typer.echo(f"⚠️ 工作空间 '{target_ws.name}' 没有会话数据")
         return
 
-    # 汇总分析
     total_rounds = sum(s.rounds for s in sessions)
     total_api_calls = sum(s.api_calls for s in sessions)
     total_duration = sum(s.duration for s in sessions)
@@ -374,7 +545,6 @@ def meta(
     avg_api_calls = total_api_calls / len(sessions)
     avg_duration = total_duration / len(sessions)
 
-    # 异常检测
     issues = []
     suggestions = []
 
@@ -398,34 +568,6 @@ def meta(
         issues.append(f"存储失败次数: {storage_failed_count}/{len(sessions)}")
         suggestions.append("检查存储路径和权限")
 
-    # 语义分析（使用 LLM）
-    typer.echo("🔍 正在进行语义分析...\n")
-
-    conversation_texts = []
-    for conv in conversations[:5]:  # 分析最近5次对话
-        summary = conv.get("summary", "")
-        msgs = conv.get("conversation", [])
-        conversation_texts.append(f"总结: {summary}\n对话: {msgs}")
-
-    if conversation_texts:
-        analysis_prompt = META_ANALYSIS_PROMPT.format(
-            conversations="\n".join(conversation_texts)
-        )
-
-        try:
-            clarifier = Clarifier()
-            result = clarifier.client.chat_once(
-                "你是一个系统自省分析师，擅长分析对话并给出改进建议。直接返回 JSON，不要有其他内容。",
-                analysis_prompt,
-            )
-            llm_result = json.loads(result.strip().strip("```json").strip("```"))
-            suggestions.extend(llm_result.get("suggestions", []))
-        except Exception:
-            pass
-
-    # 生成报告（duration 是计算属性，通过 start_time/end_time 自动计算）
-    from datetime import datetime, timedelta
-
     record = SessionRecord(
         session_id="meta-analysis",
         start_time=datetime.now() - timedelta(seconds=int(total_duration)),
@@ -448,7 +590,6 @@ def meta(
         },
     )
 
-    # 输出摘要
     typer.echo(f"📈 分析了 {len(sessions)} 次会话\n")
     typer.echo(f"平均轮次: {avg_rounds:.1f}")
     typer.echo(f"平均 API 调用: {avg_api_calls:.1f}")

@@ -1,0 +1,12 @@
+#!/bin/bash
+# 启动 Provider API 服务
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+PROVIDER_DIR="$PROJECT_ROOT/src/provider"
+
+cd "$PROVIDER_DIR"
+
+# 激活虚拟环境并启动服务
+source .venv/bin/activate
+uvicorn main:app --reload --port 8000 "$@"

@@ -27,6 +27,16 @@ AI 澄清后的输出需经过用户决策才能沉淀：
 
 ---
 
+## 模块架构
+
+| 模块 | 技术 | 职责 |
+|------|------|------|
+| CLI | Python | 命令行交互界面 |
+| Studio | Flutter | 移动端应用 |
+| Provider | FastAPI | API 服务，为 CLI 和 Studio 提供后端 |
+
+---
+
 ### v0.0.4 - [待开发]
 
 **目标**：封装 Organizer（联想）
@@ -70,3 +80,5 @@ uv run python -m pytest tests/
 详见 [信息状态设计](./status.md)
 
 详见 [参考借鉴](./reference.md)
+
+详见 [CLI 重构计划](./refactor-cli-to-provider.md)
