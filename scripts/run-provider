@@ -7,6 +7,4 @@ PROVIDER_DIR="$PROJECT_ROOT/src/provider"
 
 cd "$PROVIDER_DIR"
 
-# 激活虚拟环境并启动服务
-source .venv/bin/activate
-uvicorn main:app --reload --port 8000 "$@"
+uv run uvicorn main:app --reload --port 8000 "$@"
