@@ -21,22 +21,33 @@ CLI_DIR = PROJECT_ROOT / "src" / "cli"
 @pytest.fixture(scope="module")
 def provider_server():
     """启动 Provider 服务"""
+    original_dir = os.getcwd()
     os.chdir(PROVIDER_DIR)
     env = os.environ.copy()
     env["PYTHONPATH"] = str(PROVIDER_DIR)
 
     proc = subprocess.Popen(
-        ["python", "-m", "uvicorn", "main:app", "--port", "8000"],
+        [
+            ".venv/bin/python",
+            "-m",
+            "uvicorn",
+            "main:app",
+            "--port",
+            "8000",
+            "--host",
+            "127.0.0.1",
+        ],
         env=env,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
+        cwd=PROVIDER_DIR,
     )
 
     # 等待服务启动
     max_retries = 30
     for _ in range(max_retries):
         try:
-            resp = requests.get("http://localhost:8000/health", timeout=1)
+            resp = requests.get("http://127.0.0.1:8000/health", timeout=1)
             if resp.status_code == 200:
                 break
         except Exception:
@@ -52,20 +63,22 @@ def provider_server():
     except subprocess.TimeoutExpired:
         proc.kill()
 
+    os.chdir(original_dir)
+
 
 class TestProvider:
     """Provider API 测试"""
 
     def test_health(self, provider_server):
         """健康检查"""
-        resp = requests.get("http://localhost:8000/health")
+        resp = requests.get("http://127.0.0.1:8000/health")
         assert resp.status_code == 200
         assert resp.json()["status"] == "ok"
 
     def test_workspace_info(self, provider_server):
         """获取工作空间信息"""
         resp = requests.get(
-            "http://localhost:8000/api/v1/workspace", params={"workspace": "default"}
+            "http://127.0.0.1:8000/api/v1/workspace", params={"workspace": "default"}
         )
         assert resp.status_code == 200
         data = resp.json()
@@ -74,7 +87,7 @@ class TestProvider:
     def test_clarify_reflect(self, provider_server):
         """测试反思接口"""
         resp = requests.post(
-            "http://localhost:8000/api/v1/clarify/reflect",
+            "http://127.0.0.1:8000/api/v1/clarify/reflect",
             json={"original": "测试想法"},
         )
         assert resp.status_code == 200
@@ -88,8 +101,8 @@ class TestProvider:
             {"role": "assistant", "content": "复述测试想法"},
         ]
         resp = requests.post(
-            "http://localhost:8000/api/v1/clarify/summarize",
-            json={"conversation": conversation},
+            "http://127.0.0.1:8000/api/v1/clarify/summarize",
+            json=conversation,
         )
         assert resp.status_code == 200
         data = resp.json()
@@ -99,7 +112,7 @@ class TestProvider:
         """测试笔记 CRUD"""
         # 创建笔记
         resp = requests.post(
-            "http://localhost:8000/api/v1/notes",
+            "http://127.0.0.1:8000/api/v1/notes",
             json={
                 "original": "测试原始输入",
                 "content": "测试内容",
@@ -110,7 +123,7 @@ class TestProvider:
         assert resp.status_code == 200
 
         # 获取笔记列表
-        resp = requests.get("http://localhost:8000/api/v1/notes")
+        resp = requests.get("http://127.0.0.1:8000/api/v1/notes")
         assert resp.status_code == 200
         notes = resp.json()["notes"]
         assert len(notes) > 0
@@ -165,7 +178,7 @@ class TestIntegration:
         """完整的笔记流程"""
         # 1. 反思
         resp = requests.post(
-            "http://localhost:8000/api/v1/clarify/reflect",
+            "http://127.0.0.1:8000/api/v1/clarify/reflect",
             json={"original": "这是一个集成测试想法"},
         )
         reflection = resp.json()["reflection"]
@@ -176,14 +189,14 @@ class TestIntegration:
             {"role": "assistant", "content": reflection},
         ]
         resp = requests.post(
-            "http://localhost:8000/api/v1/clarify/summarize",
-            json={"conversation": conversation},
+            "http://127.0.0.1:8000/api/v1/clarify/summarize",
+            json=conversation,
         )
         summary_data = resp.json()
 
         # 3. 保存笔记
         resp = requests.post(
-            "http://localhost:8000/api/v1/notes",
+            "http://127.0.0.1:8000/api/v1/notes",
             json={
                 "original": "这是一个集成测试想法",
                 "content": summary_data.get("content", ""),
@@ -195,7 +208,7 @@ class TestIntegration:
         note_id = resp.json()["id"]
 
         # 4. 获取笔记列表验证
-        resp = requests.get("http://localhost:8000/api/v1/notes")
+        resp = requests.get("http://127.0.0.1:8000/api/v1/notes")
         notes = resp.json()["notes"]
         note_ids = [n["id"] for n in notes]
         assert note_id in note_ids

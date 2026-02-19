@@ -1,5 +1,3 @@
-from typing import Any
-
 from fastapi import APIRouter, Body
 
 from core.clarifier import Clarifier
@@ -18,7 +16,7 @@ def reflect(original: str = Body(..., embed=True)) -> dict:
 
 
 @router.post("/summarize")
-def summarize(conversation: list[dict[str, Any]] = Body(...)) -> dict:
+def summarize(conversation: list = Body(...)) -> dict:
     """生成总结"""
     recorder = SessionRecorder(session_id="summarize")
     clarifier = Clarifier(recorder)
@@ -27,7 +25,7 @@ def summarize(conversation: list[dict[str, Any]] = Body(...)) -> dict:
 
 
 @router.post("/continue")
-def continue_dialogue(conversation: list[dict[str, Any]] = Body(...)) -> dict:
+def continue_dialogue(conversation: list = Body(...)) -> dict:
     """继续对话"""
     recorder = SessionRecorder(session_id="continue")
     clarifier = Clarifier(recorder)
