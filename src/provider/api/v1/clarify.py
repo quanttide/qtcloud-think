@@ -1,4 +1,6 @@
-from fastapi import APIRouter
+from typing import Any
+
+from fastapi import APIRouter, Body
 
 from core.clarifier import Clarifier
 from core.session_recorder import SessionRecorder
@@ -7,7 +9,7 @@ router = APIRouter(prefix="/clarify", tags=["clarify"])
 
 
 @router.post("/reflect")
-def reflect(original: str) -> dict:
+def reflect(original: str = Body(..., embed=True)) -> dict:
     """首轮反思：复述用户想法"""
     recorder = SessionRecorder(session_id="reflect")
     clarifier = Clarifier(recorder)
@@ -16,7 +18,7 @@ def reflect(original: str) -> dict:
 
 
 @router.post("/summarize")
-def summarize(conversation: list[dict]) -> dict:
+def summarize(conversation: list[dict[str, Any]] = Body(...)) -> dict:
     """生成总结"""
     recorder = SessionRecorder(session_id="summarize")
     clarifier = Clarifier(recorder)
@@ -25,7 +27,7 @@ def summarize(conversation: list[dict]) -> dict:
 
 
 @router.post("/continue")
-def continue_dialogue(conversation: list[dict]) -> dict:
+def continue_dialogue(conversation: list[dict[str, Any]] = Body(...)) -> dict:
     """继续对话"""
     recorder = SessionRecorder(session_id="continue")
     clarifier = Clarifier(recorder)
