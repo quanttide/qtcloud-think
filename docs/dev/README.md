@@ -9,6 +9,7 @@
 | [meta.md](./meta.md) | Meta 模块设计（v0.0.2） |
 | [collector.md](./collector.md) | Collector 收集器设计：为 meta 采集数据 |
 | [workspace.md](./workspace.md) | Workspace 隔离设计：数据分部门/用途隔离 |
+| [reference.md](./reference.md) | 参考借鉴：知识管理实践经验 |
 
 ## 组织原则
 

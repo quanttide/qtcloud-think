@@ -68,3 +68,5 @@ uv run python -m pytest tests/
 详见 [Collector 收集器设计](./collector.md)
 
 详见 [信息状态设计](./status.md)
+
+详见 [参考借鉴](./reference.md)
