@@ -61,6 +61,40 @@ cd src/cli && python -m black . && python -m ruff check . --fix && python -m myp
 
 ---
 
+### v0.0.4 开发经验
+
+**架构重构：启发者与观察者架构**
+
+1. **智能体分类**
+   - 启发者(Sower)：主动思考，围绕上下文选择 CODE 技能
+   - 观察者(Observer)：通过客观指标(clarity/completeness/depth/coherence/relevance)与启发者沟通
+   - Meta：元认知反思
+   - **CODE 是技能(Skill)，不是智能体**
+
+2. **目录结构**
+   ```
+   src/provider/
+   ├── app/
+   │   ├── agents/      # 智能体
+   │   ├── skills/     # 技能
+   │   ├── infrastructure/  # 基础设施(LLM/Storage/Workspace)
+   │   └── api/        # API
+   └── tests/
+   ```
+
+3. **测试经验**
+   - 使用 `@patch("skills.xxx.get_client")` mock LLM 调用
+   - 未实现的技能返回空字符串 `""`，测试需匹配
+   - ExpressSkill 依赖 Storage，需要正确初始化
+   - Observer 可选注入，不影响 Sower 独立工作
+
+4. **下一步优化**
+   - Observer 评估逻辑需要真实实现
+   - Organize/Distill 技能需要实现
+   - Exporter 从 Storage 解绑后需要重新设计
+
+---
+
 ## 长期记忆
 
 维护这些文件前先阅读 [CONTRIBUTING.md](CONTRIBUTING.md) 了解相关规范。

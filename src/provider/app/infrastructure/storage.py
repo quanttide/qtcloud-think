@@ -4,7 +4,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from core.workspace import Workspace
+from .workspace import Workspace
 
 
 class Storage:
