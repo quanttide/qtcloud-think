@@ -1,0 +1,11 @@
+{
+  "id": "6b8e7829-03e7-47e3-bff3-b90065927700",
+  "title": "知识库与文档设计",
+  "description": "明确知识库与文档的读写角色，提高系统数据管理效率。",
+  "category": "semantic",
+  "tense": "present",
+  "type": "decision",
+  "source_date": "2026-03-13",
+  "source_file": "2026-03-13.md",
+  "created_at": "2026-04-04T01:38:56.726478"
+}

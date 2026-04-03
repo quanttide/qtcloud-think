@@ -1,0 +1,11 @@
+{
+  "id": "f9da2d04-31c1-47e4-87f4-8def8bc85e18",
+  "title": "工作日志数据契约设计",
+  "description": "为默认日志、思考日志和任务日志制定数据契约，清晰感知不同状态的数据特征。",
+  "category": "semantic",
+  "tense": "future",
+  "type": "decision",
+  "source_date": "2026-03-13",
+  "source_file": "2026-03-13.md",
+  "created_at": "2026-04-04T01:38:56.726711"
+}
