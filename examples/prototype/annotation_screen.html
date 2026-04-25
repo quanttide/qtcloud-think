@@ -1,0 +1,668 @@
+<!doctype html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>认知棱镜 · 原始日志与批注（含操作指引）</title>
+        <style>
+            :root {
+                --bg: #f5f5f0;
+                --paper: #fdfaf5;
+                --text: #2c2416;
+                --text-muted: #6b5e4a;
+                --text-light: #9b8e7a;
+                --accent-warm: #c97d60;
+                --accent-cool: #5b6abf;
+                --highlight-bg: #fef3c7;
+                --highlight-active: #ffe9a0;
+                --annotation-bg: #fffbf5;
+                --annotation-border: #e8d5c0;
+                --tag-bg: #fef0ea;
+                --tag-text: #b15330;
+                --action-bg: #f4f9f4;
+                --action-border: #b8d4b8;
+                --action-text: #3b5e3b;
+                --shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+                --radius: 12px;
+                --transition: 0.3s cubic-bezier(0.22, 0.61, 0.36, 1);
+            }
+
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            body {
+                background: var(--bg);
+                font-family:
+                    "PingFang SC", "Noto Serif SC", "Source Han Serif SC",
+                    "STSong", "Songti SC", "Microsoft YaHei", serif;
+                color: var(--text);
+                line-height: 1.9;
+                -webkit-font-smoothing: antialiased;
+                display: flex;
+                justify-content: center;
+                padding: 0;
+                min-height: 100vh;
+            }
+
+            .reader-layout {
+                display: flex;
+                max-width: 1200px;
+                width: 100%;
+                min-height: 100vh;
+                position: relative;
+            }
+
+            /* ── 左侧：原始日志流 ── */
+            .log-pane {
+                flex: 1 1 55%;
+                padding: 2.5rem 2rem 3rem 2.5rem;
+                background: var(--paper);
+                border-right: 1px solid #e8e0d5;
+                position: relative;
+                overflow-y: auto;
+                max-height: 100vh;
+                scroll-behavior: smooth;
+            }
+
+            .log-pane .page-header {
+                margin-bottom: 2rem;
+                padding-bottom: 1.2rem;
+                border-bottom: 1px solid #e8e0d5;
+            }
+            .log-pane .page-header .date {
+                font-size: 0.8rem;
+                color: var(--text-light);
+                letter-spacing: 0.5px;
+                margin-bottom: 0.3rem;
+            }
+            .log-pane .page-header h2 {
+                font-size: 1.5rem;
+                font-weight: 700;
+                color: #1a1208;
+                letter-spacing: -0.3px;
+            }
+            .log-pane .page-header .desc {
+                font-size: 0.82rem;
+                color: var(--text-muted);
+                margin-top: 0.3rem;
+                font-style: italic;
+            }
+
+            .log-paragraph {
+                margin-bottom: 1.4rem;
+                font-size: 0.95rem;
+                color: #3d3226;
+                text-indent: 2em;
+                position: relative;
+            }
+            .log-paragraph.no-indent {
+                text-indent: 0;
+            }
+
+            .hotspot {
+                background: var(--highlight-bg);
+                padding: 0.05rem 0.25rem;
+                border-radius: 4px;
+                cursor: pointer;
+                transition: all 0.2s;
+                position: relative;
+                font-weight: 500;
+                color: #5c3d2e;
+                white-space: nowrap;
+                border-bottom: 1.5px dashed #d4b896;
+                scroll-margin-top: 2rem;
+            }
+            .hotspot:hover {
+                background: var(--highlight-active);
+                border-bottom-color: var(--accent-warm);
+            }
+            .hotspot.active {
+                background: #ffe9a0;
+                border-bottom: 2px solid var(--accent-warm);
+                box-shadow: 0 0 0 3px rgba(201, 125, 96, 0.12);
+                border-radius: 5px;
+            }
+            .hotspot .badge {
+                display: inline-block;
+                font-size: 0.55rem;
+                font-weight: 700;
+                background: var(--accent-warm);
+                color: #fff;
+                border-radius: 10px;
+                padding: 0.1rem 0.4rem;
+                vertical-align: middle;
+                margin-left: 0.2rem;
+                letter-spacing: 0.5px;
+                position: relative;
+                top: -1px;
+            }
+
+            /* ── 右侧：批注卡片面板 ── */
+            .annotation-pane {
+                flex: 0 0 420px;
+                width: 420px;
+                padding: 1.5rem 1.2rem 3rem;
+                background: #faf7f2;
+                overflow-y: auto;
+                max-height: 100vh;
+                position: sticky;
+                top: 0;
+                scroll-behavior: smooth;
+            }
+            .annotation-pane .pane-title {
+                font-size: 0.7rem;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                color: var(--text-light);
+                margin-bottom: 1.2rem;
+                padding-bottom: 0.6rem;
+                border-bottom: 1px solid #e8e0d5;
+                font-weight: 600;
+                display: flex;
+                align-items: center;
+                gap: 0.4rem;
+            }
+
+            .annotation-card {
+                background: var(--annotation-bg);
+                border: 1px solid var(--annotation-border);
+                border-radius: var(--radius);
+                padding: 1rem 1.1rem;
+                margin-bottom: 0.9rem;
+                box-shadow: var(--shadow);
+                transition: all var(--transition);
+                position: relative;
+                opacity: 0.7;
+                transform: translateX(4px);
+                cursor: pointer;
+            }
+            .annotation-card:hover {
+                opacity: 0.9;
+                transform: translateX(0);
+                box-shadow: 0 4px 18px rgba(0, 0, 0, 0.1);
+            }
+            .annotation-card.active {
+                opacity: 1;
+                transform: translateX(0);
+                border-color: var(--accent-warm);
+                box-shadow: 0 4px 20px rgba(201, 125, 96, 0.15);
+                background: #fffef9;
+                border-left: 4px solid var(--accent-warm);
+            }
+
+            .card-tag {
+                display: inline-block;
+                background: var(--tag-bg);
+                color: var(--tag-text);
+                font-size: 0.62rem;
+                font-weight: 700;
+                padding: 0.15rem 0.55rem;
+                border-radius: 12px;
+                letter-spacing: 0.4px;
+                margin-bottom: 0.5rem;
+            }
+            .card-label {
+                font-size: 0.65rem;
+                font-weight: 700;
+                color: #8b7355;
+                letter-spacing: 0.5px;
+                margin-bottom: 0.3rem;
+                text-transform: uppercase;
+            }
+            .card-quote {
+                font-size: 0.78rem;
+                font-style: italic;
+                color: #7a6a55;
+                border-left: 2px solid #d4c4a8;
+                padding-left: 0.7rem;
+                margin-bottom: 0.5rem;
+                line-height: 1.6;
+            }
+            .card-insight {
+                list-style: none;
+                margin-bottom: 0.5rem;
+            }
+            .card-insight li {
+                font-size: 0.82rem;
+                color: #4a3f35;
+                line-height: 1.7;
+                padding-left: 0.8rem;
+                position: relative;
+                margin-bottom: 0.1rem;
+            }
+            .card-insight li::before {
+                content: "▸";
+                position: absolute;
+                left: 0;
+                color: var(--accent-warm);
+                font-size: 0.6rem;
+                top: 0.15rem;
+            }
+
+            /* 操作指引区域 */
+            .action-block {
+                margin-top: 0.4rem;
+                background: var(--action-bg);
+                border-left: 3px solid var(--action-border);
+                border-radius: 0 6px 6px 0;
+                padding: 0.5rem 0.7rem;
+                font-size: 0.78rem;
+                color: var(--action-text);
+                line-height: 1.5;
+            }
+            .action-block .action-icon {
+                font-size: 0.7rem;
+                margin-right: 0.2rem;
+            }
+
+            .annotation-empty {
+                text-align: center;
+                color: #bfb5a3;
+                font-size: 0.8rem;
+                margin-top: 3rem;
+                font-style: italic;
+                line-height: 1.6;
+            }
+
+            @media (max-width: 800px) {
+                .reader-layout {
+                    flex-direction: column;
+                }
+                .log-pane {
+                    flex: auto;
+                    max-height: none;
+                    border-right: none;
+                    border-bottom: 1px solid #e8e0d5;
+                    padding: 1.2rem 1rem 1.5rem;
+                }
+                .annotation-pane {
+                    flex: auto;
+                    width: 100%;
+                    max-height: none;
+                    position: static;
+                    padding: 1rem 1rem 2rem;
+                }
+                .annotation-card {
+                    opacity: 0.9;
+                    transform: none;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="reader-layout">
+            <!-- ═══════════ 左侧：原始日志流 ═══════════ -->
+            <main class="log-pane" id="logPane">
+                <div class="page-header">
+                    <div class="date">2026年4月23日</div>
+                    <h2>创始人日志</h2>
+                    <p class="desc">
+                        一次密集的思维重构——从焦虑到构建，从执行到澄明
+                    </p>
+                </div>
+
+                <p class="log-paragraph" id="para-1">
+                    尝试换一种角度去更积极地去面对产生的新想法。就不是要求自己要完成的这种<span
+                        class="hotspot"
+                        data-annotation="anno-1"
+                        id="hs-1"
+                        >执行思维<span class="badge">1</span></span
+                    >，但是我又发现了新的入口的<span
+                        class="hotspot"
+                        data-annotation="anno-1"
+                        id="hs-1b"
+                        >构建思维<span class="badge">1</span></span
+                    >。
+                </p>
+
+                <p class="log-paragraph" id="para-2">
+                    原始的日志整理加工后，具备去看真实的思考过程和情感过程。这些是非常丰富的元素材。同时，这也是AI原生时代的一个原方法，就是真实地去记录人类的心理和思考活动，既能够从里面去提炼理性，也能够从里面去提炼故事。它是一个很高位的东西，而我已经有了很多很多提炼这种高维数据的思路。
+                </p>
+
+                <p class="log-paragraph" id="para-3">
+                    我尝试重新去叙事转换思维。把<span
+                        class="hotspot"
+                        data-annotation="anno-2"
+                        id="hs-2"
+                        >"这是一个问题"变成"我又发现了一个问题"<span
+                            class="badge"
+                            >2</span
+                        ></span
+                    >。我每天都面临大量的困难，它大部分都解决不了，所以<span
+                        class="hotspot"
+                        data-annotation="anno-2"
+                        id="hs-2b"
+                        >发现问题本身就是一个很积极的信号<span class="badge"
+                            >2</span
+                        ></span
+                    >。这种不断发现的会让我的心态变得特别特别的积极，就我会愿意说出来，而且我在不断的通过这种方式暗示我自己，这是新的发现，这是在构建而不是问题。
+                </p>
+
+                <p class="log-paragraph" id="para-4">
+                    我又发现我的紧张和压力，就是说这种积极思考法最大的信号就是我感觉到紧张压力的时候，那我就尝试重新去叙事转换思维。<span
+                        class="hotspot"
+                        data-annotation="anno-2"
+                        id="hs-2c"
+                        >这种叙事重构的方式已经开始渗透到了我的原思考过程之中<span
+                            class="badge"
+                            >2</span
+                        ></span
+                    >。我又发现了我自己一个认知上的升级和迁移。
+                </p>
+
+                <p class="log-paragraph" id="para-5">
+                    把手上的一些维护工作交给了我助理，然后我感觉我的视野一下子<span
+                        class="hotspot"
+                        data-annotation="anno-3"
+                        id="hs-3"
+                        >拔高上来<span class="badge">3</span></span
+                    >，我就敢去处理业务问题。作为leader专注于业务整体控制的这个思路已经建立起来了。我专注于<span
+                        class="hotspot"
+                        data-annotation="anno-3"
+                        id="hs-3b"
+                        >澄新意图<span class="badge">3</span></span
+                    >，把执行工作交给团队。我感觉今天是一个临界点，就是我想要的那种作为leader专注于业务整体控制的思路已经建立起来了。
+                </p>
+
+                <p class="log-paragraph" id="para-6">
+                    简介相对来讲可以更<span
+                        class="hotspot"
+                        data-annotation="anno-4"
+                        id="hs-4"
+                        >流动<span class="badge">4</span></span
+                    >得多……案例就可以更<span
+                        class="hotspot"
+                        data-annotation="anno-4"
+                        id="hs-4b"
+                        >固定<span class="badge">4</span></span
+                    >一点。只要我知道该怎么<span
+                        class="hotspot"
+                        data-annotation="anno-4"
+                        id="hs-4c"
+                        >提炼<span class="badge">4</span></span
+                    >，我其实就不用过多地去记这个元认知具体是什么。元认知本来信息量就不该很多，该怎么记怎么记就行了。只要我把案例管理好，那么元认知其实就会蕴含在案例里面。
+                </p>
+
+                <p class="log-paragraph" id="para-7">
+                    我放弃了一个假设，就是说我<span
+                        class="hotspot"
+                        data-annotation="anno-5"
+                        id="hs-5"
+                        >并不是一定要去兼容市场现有的标准<span class="badge"
+                            >5</span
+                        ></span
+                    >。我们的体系已经高出市场……最重要的事情是能够给我们<span
+                        class="hotspot"
+                        data-annotation="anno-5"
+                        id="hs-5b"
+                        >掏钱的客户<span class="badge">5</span></span
+                    >用。当原标准能够开始自我迭代，团队能够有能力去自我迭代，并且比我做得更好的时候，那么理论上来讲，云业务就可以开始商业化了。
+                </p>
+
+                <p class="log-paragraph" id="para-8">
+                    我又发现了一个点，就是从知识工程角度来看的话，其实我们对资产做的这一系列活动，很大程度上就是知识工程的流程，所以这两个流程同构是很正常很应该的。<span
+                        class="hotspot"
+                        data-annotation="anno-6"
+                        id="hs-6"
+                        >范畴论<span class="badge">6</span></span
+                    >就很有summarize的这种感觉在，因为它要求按照上级的范畴去做事，范畴更多的是对这个结构的总结，这也是他和我的思维方式比较符合的原因之一。
+                </p>
+
+                <p
+                    class="log-paragraph no-indent"
+                    style="
+                        color: #9b8e7a;
+                        font-style: italic;
+                        margin-top: 1.5rem;
+                    "
+                >
+                    —— 日志摘录完毕。点击高亮词查看对应的认知批注与操作指引。
+                </p>
+            </main>
+
+            <!-- ═══════════ 右侧：批注卡片面板（含操作指引） ═══════════ -->
+            <aside class="annotation-pane" id="annotationPane">
+                <div class="pane-title">
+                    <span>🔍</span> 认知批注 · 思维工具箱
+                </div>
+                <div class="annotation-empty" id="emptyHint">
+                    点击左侧<span
+                        style="
+                            background: #fef3c7;
+                            padding: 0.1rem 0.4rem;
+                            border-radius: 3px;
+                        "
+                        >高亮文字</span
+                    >，<br />右侧将展示模式分析与可操作指引。
+                </div>
+
+                <!-- 批注1 -->
+                <article
+                    class="annotation-card"
+                    id="anno-1"
+                    data-hotspots="hs-1,hs-1b"
+                >
+                    <span class="card-tag">自我指涉</span>
+                    <div class="card-label">入口转换 → 元认知框架</div>
+                    <div class="card-quote">
+                        "不是要求自己要完成的执行思维，而是发现了新入口的构建思维"
+                    </div>
+                    <ul class="card-insight">
+                        <li>从被动响应到主动创造框架</li>
+                        <li>在元层面重新定义思维活动的意义</li>
+                    </ul>
+                    <div class="action-block">
+                        <span class="action-icon">💡</span>
+                        下次当你感到被任务追着跑时，停一秒问自己：<strong
+                            >“这个任务是在执行旧脚本，还是在构建新入口？”</strong
+                        >
+                        把“我要完成”改成“我正在发现一个可复用的新入口”。
+                    </div>
+                </article>
+
+                <!-- 批注2 -->
+                <article
+                    class="annotation-card"
+                    id="anno-2"
+                    data-hotspots="hs-2,hs-2b,hs-2c"
+                >
+                    <span class="card-tag">叙事重构</span>
+                    <div class="card-label">情感反射 → 认知安全网</div>
+                    <div class="card-quote">
+                        "把’这是一个问题‘变成’我又发现了一个问题‘"
+                    </div>
+                    <ul class="card-insight">
+                        <li>障碍 → 养料的叙事重构</li>
+                        <li>建立心理上的安全网</li>
+                        <li>困难成为信息生产的持续来源</li>
+                    </ul>
+                    <div class="action-block">
+                        <span class="action-icon">💡</span>
+                        遇到阻塞时立刻对自己说：<strong>“我又发现了一个问题”</strong>（注意用“发现”而不是“遇到”），然后花1分钟把这个问题写进日志。它从压在你身上的石头，变成了你产出给团队的养料。
+                    </div>
+                </article>
+
+                <!-- 批注3 -->
+                <article
+                    class="annotation-card"
+                    id="anno-3"
+                    data-hotspots="hs-3,hs-3b"
+                >
+                    <span class="card-tag">角色叙事</span>
+                    <div class="card-label">角色跃迁 → 领导力重构</div>
+                    <div class="card-quote">
+                        "视野一下子拔高上来……我专注于澄新意图"
+                    </div>
+                    <ul class="card-insight">
+                        <li>从系统的核心引擎变为意义源头</li>
+                        <li>清晰意图比亲自执行更重要</li>
+                    </ul>
+                    <div class="action-block">
+                        <span class="action-icon">💡</span>
+                        当你想插手具体执行时，把手从键盘上拿开。只写下<strong>一个方向性意图</strong>（例如“把这个建模思路跑通”），交给助理，让她自己去组装路径。你只负责澄明意图，不负责铺设轨道。
+                    </div>
+                </article>
+
+                <!-- 批注4 -->
+                <article
+                    class="annotation-card"
+                    id="anno-4"
+                    data-hotspots="hs-4,hs-4b,hs-4c"
+                >
+                    <span class="card-tag">认知架构</span>
+                    <div class="card-label">知识边界 → 蒸馏逻辑</div>
+                    <div class="card-quote">
+                        "简介流动……案例固定……知道怎么提炼就不用记元认知"
+                    </div>
+                    <ul class="card-insight">
+                        <li>流动思考与固定资产的动态平衡</li>
+                        <li>核心是提炼方法而非囤积信息</li>
+                    </ul>
+                    <div class="action-block">
+                        <span class="action-icon">💡</span>
+                        写完一篇日志后，做一次<strong>单句蒸馏</strong>：如果这篇只能留一段给团队，留哪段？把它放进案例或简介，剩下的让它流动。你的目标是“提炼一次，团队反复使用”。
+                    </div>
+                </article>
+
+                <!-- 批注5 -->
+                <article
+                    class="annotation-card"
+                    id="anno-5"
+                    data-hotspots="hs-5,hs-5b"
+                >
+                    <span class="card-tag">认知转换</span>
+                    <div class="card-label">范式突破 → 重新锚定价值</div>
+                    <div class="card-quote">
+                        "并不是一定要去兼容市场现有的标准……最重要是给掏钱的客户用"
+                    </div>
+                    <ul class="card-insight">
+                        <li>从适配者到定义者的框架转换</li>
+                        <li>价值从市场流行度转到客户真实效用</li>
+                    </ul>
+                    <div class="action-block">
+                        <span class="action-icon">💡</span>
+                        下次评估一个外部标准或竞品时，先问<strong>“它对我们的客户有用吗？”</strong>而不是“它在市场上流行吗？”。把判断价值的锚点从外部认可拉回到客户实际受益上。
+                    </div>
+                </article>
+
+                <!-- 批注6 -->
+                <article
+                    class="annotation-card"
+                    id="anno-6"
+                    data-hotspots="hs-6"
+                >
+                    <span class="card-tag">闭环</span>
+                    <span class="card-tag">自我指涉</span>
+                    <div class="card-label">闭环 → 元认知递归</div>
+                    <div class="card-quote">
+                        "范畴论……按照上级的范畴去做事，是对结构的总结"
+                    </div>
+                    <ul class="card-insight">
+                        <li>用叙事重构观察叙事重构本身</li>
+                        <li>元认知的递归升级</li>
+                    </ul>
+                    <div class="action-block">
+                        <span class="action-icon">💡</span>
+                        当你意识到自己正在使用某种思维模式（比如叙事重构）时，<strong>把这个“意识到”本身也写下来</strong>。这等于在思维上又加了一层透镜，持续递归升级你的元认知。
+                    </div>
+                </article>
+            </aside>
+        </div>
+
+        <script>
+            (function () {
+                const hotspots = document.querySelectorAll(".hotspot");
+                const annotationCards =
+                    document.querySelectorAll(".annotation-card");
+                const emptyHint = document.getElementById("emptyHint");
+                const annotationPane =
+                    document.getElementById("annotationPane");
+                const logPane = document.getElementById("logPane");
+
+                let activeAnnotationId = null;
+
+                function clearAllActive() {
+                    hotspots.forEach((h) => h.classList.remove("active"));
+                    annotationCards.forEach((c) =>
+                        c.classList.remove("active"),
+                    );
+                    activeAnnotationId = null;
+                    if (emptyHint) emptyHint.style.display = "block";
+                }
+
+                function activateAnnotation(annotationId) {
+                    clearAllActive();
+
+                    const relatedHotspots = document.querySelectorAll(
+                        `[data-annotation="${annotationId}"]`,
+                    );
+                    relatedHotspots.forEach((h) => h.classList.add("active"));
+
+                    const card = document.getElementById(annotationId);
+                    if (card) {
+                        card.classList.add("active");
+                        card.scrollIntoView({
+                            behavior: "smooth",
+                            block: "center",
+                        });
+                    }
+
+                    activeAnnotationId = annotationId;
+                    if (emptyHint) emptyHint.style.display = "none";
+                }
+
+                logPane.addEventListener("click", function (e) {
+                    const hotspot = e.target.closest(".hotspot");
+                    if (!hotspot) return;
+                    const annotationId =
+                        hotspot.getAttribute("data-annotation");
+                    if (!annotationId) return;
+
+                    if (activeAnnotationId === annotationId) {
+                        clearAllActive();
+                        return;
+                    }
+                    activateAnnotation(annotationId);
+                });
+
+                annotationPane.addEventListener("click", function (e) {
+                    const card = e.target.closest(".annotation-card");
+                    if (!card) return;
+                    const annotationId = card.id;
+                    if (!annotationId) return;
+
+                    if (activeAnnotationId === annotationId) {
+                        clearAllActive();
+                        return;
+                    }
+                    activateAnnotation(annotationId);
+
+                    const firstHotspot = document.querySelector(
+                        `[data-annotation="${annotationId}"]`,
+                    );
+                    if (firstHotspot) {
+                        firstHotspot.scrollIntoView({
+                            behavior: "smooth",
+                            block: "center",
+                        });
+                    }
+                });
+
+                document.addEventListener("keydown", function (e) {
+                    if (e.key === "Escape") {
+                        clearAllActive();
+                    }
+                });
+
+                // 默认激活第一个批注，作为指引示范
+                if (annotationCards.length > 0 && window.innerWidth > 800) {
+                    const firstCard = annotationCards[0];
+                    activateAnnotation(firstCard.id);
+                }
+            })();
+        </script>
+    </body>
+</html>
