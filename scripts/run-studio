@@ -7,4 +7,4 @@ STUDIO_DIR="$PROJECT_ROOT/src/studio"
 
 cd "$STUDIO_DIR"
 
-flutter run -d chrome "$@"
+flutter run -d linux "$@"
