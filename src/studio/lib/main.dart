@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'screens/cognitive_prism_screen.dart';
+import 'screens/annotation_screen.dart';
 
 void main() {
   runApp(const QtCloudThinkApp());
@@ -19,7 +19,7 @@ class QtCloudThinkApp extends StatelessWidget {
           brightness: Brightness.light,
         ),
       ),
-      home: const CognitivePrismScreen(),
+      home: const AnnotationScreen(),
     );
   }
 }

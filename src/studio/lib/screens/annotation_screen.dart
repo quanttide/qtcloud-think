@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import '../models/log_data.dart';
 
-class CognitivePrismScreen extends StatefulWidget {
-  const CognitivePrismScreen({super.key});
+class AnnotationScreen extends StatefulWidget {
+  const AnnotationScreen({super.key});
 
   @override
-  State<CognitivePrismScreen> createState() => _CognitivePrismScreenState();
+  State<AnnotationScreen> createState() => _AnnotationScreenState();
 }
 
-class _CognitivePrismScreenState extends State<CognitivePrismScreen> {
+class _AnnotationScreenState extends State<AnnotationScreen> {
   String? _activeAnnotationId;
 
   void _activateAnnotation(String annotationId) {
