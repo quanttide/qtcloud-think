@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/log_data.dart';
+import '../models/journal_data.dart';
 
 class AnnotationScreen extends StatefulWidget {
   const AnnotationScreen({super.key});
@@ -9,14 +9,14 @@ class AnnotationScreen extends StatefulWidget {
 }
 
 class _AnnotationScreenState extends State<AnnotationScreen> {
-  String? _activeAnnotationId;
+  String? _activeCardId;
 
-  void _activateAnnotation(String annotationId) {
+  void _activateCard(String cardId) {
     setState(() {
-      if (_activeAnnotationId == annotationId) {
-        _activeAnnotationId = null;
+      if (_activeCardId == cardId) {
+        _activeCardId = null;
       } else {
-        _activeAnnotationId = annotationId;
+        _activeCardId = cardId;
       }
     });
   }
@@ -104,7 +104,7 @@ class _AnnotationScreenState extends State<AnnotationScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            ...logParagraphs.map((para) => _buildLogParagraph(para)),
+            ...journalEntries.map((para) => _buildJournalEntry(para)),
             const SizedBox(height: 16),
             const Center(
               child: Text(
@@ -123,8 +123,8 @@ class _AnnotationScreenState extends State<AnnotationScreen> {
     );
   }
 
-  Widget _buildLogParagraph(LogParagraph para) {
-    if (para.hotspots.isEmpty) {
+  Widget _buildJournalEntry(JournalEntry para) {
+    if (para.highlights.isEmpty) {
       return Padding(
         padding: const EdgeInsets.only(bottom: 14),
         child: Text(
@@ -153,23 +153,23 @@ class _AnnotationScreenState extends State<AnnotationScreen> {
     );
   }
 
-  List<InlineSpan> _buildParagraphSpans(LogParagraph para) {
+  List<InlineSpan> _buildParagraphSpans(JournalEntry para) {
     final spans = <InlineSpan>[];
     String remaining = para.content;
 
-    for (final hotspot in para.hotspots) {
-      final index = remaining.indexOf(hotspot.text);
+    for (final highlight in para.highlights) {
+      final index = remaining.indexOf(highlight.text);
       if (index == -1) continue;
 
       if (index > 0) {
         spans.add(TextSpan(text: remaining.substring(0, index)));
       }
 
-      final isActive = _activeAnnotationId == hotspot.annotationId;
+      final isActive = _activeCardId == highlight.cardId;
       spans.add(
         WidgetSpan(
           child: GestureDetector(
-            onTap: () => _activateAnnotation(hotspot.annotationId),
+            onTap: () => _activateCard(highlight.cardId),
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 1),
               decoration: BoxDecoration(
@@ -188,7 +188,7 @@ class _AnnotationScreenState extends State<AnnotationScreen> {
                 ),
               ),
               child: Text(
-                hotspot.text,
+                highlight.text,
                 style: TextStyle(
                   fontWeight: FontWeight.w500,
                   color: const Color(0xFF5c3d2e),
@@ -199,7 +199,7 @@ class _AnnotationScreenState extends State<AnnotationScreen> {
         ),
       );
 
-      remaining = remaining.substring(index + hotspot.text.length);
+      remaining = remaining.substring(index + highlight.text.length);
     }
 
     if (remaining.isNotEmpty) {
@@ -230,7 +230,7 @@ class _AnnotationScreenState extends State<AnnotationScreen> {
               ),
             ),
             const SizedBox(height: 12),
-            if (_activeAnnotationId == null)
+            if (_activeCardId == null)
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -250,18 +250,18 @@ class _AnnotationScreenState extends State<AnnotationScreen> {
                   ),
                 ),
               ),
-            ...annotations.map((anno) => _buildAnnotationCard(anno)),
+            ...cognitiveCards.map((anno) => _buildAnnotationCard(anno)),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildAnnotationCard(Annotation anno) {
-    final isActive = _activeAnnotationId == anno.id;
+  Widget _buildAnnotationCard(CognitiveCard card) {
+    final isActive = _activeCardId == card.id;
 
     return GestureDetector(
-      onTap: () => _activateAnnotation(anno.id),
+      onTap: () => _activateCard(card.id),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 250),
         curve: Curves.ease,
@@ -290,7 +290,7 @@ class _AnnotationScreenState extends State<AnnotationScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                anno.title,
+                card.title,
                 style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
@@ -299,7 +299,7 @@ class _AnnotationScreenState extends State<AnnotationScreen> {
               ),
               const SizedBox(height: 6),
               Text(
-                '"${anno.quote}"',
+                '"${card.quote}"',
                 style: const TextStyle(
                   fontSize: 12,
                   fontStyle: FontStyle.italic,
@@ -325,7 +325,7 @@ class _AnnotationScreenState extends State<AnnotationScreen> {
                     const SizedBox(width: 6),
                     Expanded(
                       child: Text(
-                        anno.action,
+                        card.action,
                         style: const TextStyle(
                           fontSize: 12,
                           color: Color(0xFF3b5e3b),
