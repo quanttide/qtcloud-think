@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import '../models/journal_data.dart';
+import 'package:qtcloud_think_studio/models/entities/entities.dart';
+import 'package:qtcloud_think_studio/samples/journal_samples.dart';
+import 'package:qtcloud_think_studio/samples/card_samples.dart';
 
 class AnnotationScreen extends StatefulWidget {
   const AnnotationScreen({super.key});
@@ -104,7 +106,7 @@ class _AnnotationScreenState extends State<AnnotationScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            ...journalEntries.map((para) => _buildJournalEntry(para)),
+            ...journalEntries.map((entry) => _buildJournalEntry(entry)),
             const SizedBox(height: 16),
             const Center(
               child: Text(
@@ -123,12 +125,12 @@ class _AnnotationScreenState extends State<AnnotationScreen> {
     );
   }
 
-  Widget _buildJournalEntry(JournalEntry para) {
-    if (para.highlights.isEmpty) {
+  Widget _buildJournalEntry(JournalEntry entry) {
+    if (entry.highlights.isEmpty) {
       return Padding(
         padding: const EdgeInsets.only(bottom: 14),
         child: Text(
-          para.content,
+          entry.content,
           style: const TextStyle(
             fontSize: 15,
             color: Color(0xFF3d3226),
@@ -147,17 +149,17 @@ class _AnnotationScreenState extends State<AnnotationScreen> {
             color: Color(0xFF3d3226),
             height: 1.8,
           ),
-          children: _buildParagraphSpans(para),
+          children: _buildParagraphSpans(entry),
         ),
       ),
     );
   }
 
-  List<InlineSpan> _buildParagraphSpans(JournalEntry para) {
+  List<InlineSpan> _buildParagraphSpans(JournalEntry entry) {
     final spans = <InlineSpan>[];
-    String remaining = para.content;
+    String remaining = entry.content;
 
-    for (final highlight in para.highlights) {
+    for (final highlight in entry.highlights) {
       final index = remaining.indexOf(highlight.text);
       if (index == -1) continue;
 
@@ -257,7 +259,7 @@ class _AnnotationScreenState extends State<AnnotationScreen> {
     );
   }
 
-  Widget _buildAnnotationCard(CardModel card) {
+  Widget _buildAnnotationCard(CognitiveCard card) {
     final isActive = _activeCardId == card.id;
 
     return GestureDetector(
