@@ -224,7 +224,7 @@ class _CognitivePrismScreenState extends State<CognitivePrismScreen> {
                 Text('🔍', style: TextStyle(fontSize: 14)),
                 SizedBox(width: 6),
                 Text(
-                  '认知批注',
+                  '认知批注 · 思维工具箱',
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
@@ -378,6 +378,40 @@ class _CognitivePrismScreenState extends State<CognitivePrismScreen> {
                       ],
                     ),
                   )),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              decoration: BoxDecoration(
+                color: const Color(0xFFf4f9f4),
+                borderRadius: BorderRadius.circular(6),
+                border: const Border(
+                  left: BorderSide(
+                    color: Color(0xFFb8d4b8),
+                    width: 3,
+                  ),
+                ),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    '💡',
+                    style: TextStyle(fontSize: 12),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      anno.action,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: Color(0xFF3b5e3b),
+                        height: 1.5,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
             ],
           ),
         ),

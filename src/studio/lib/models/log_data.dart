@@ -30,6 +30,7 @@ class Annotation {
   final List<String> insights;
   final String entry;
   final String exit;
+  final String action;
 
   const Annotation({
     required this.id,
@@ -39,6 +40,7 @@ class Annotation {
     required this.insights,
     required this.entry,
     required this.exit,
+    required this.action,
   });
 }
 
@@ -118,6 +120,7 @@ const List<Annotation> annotations = [
       '在元层面重新定义思维活动的意义',
       '开启了整个认知螺旋的起点',
     ],
+    action: '下次当你感到被任务追着跑时，停一秒问自己："这个任务是在执行旧脚本，还是在构建新入口？" 把"我要完成"改成"我正在发现一个可复用的新入口"。',
   ),
   Annotation(
     id: 'anno-2',
@@ -132,6 +135,7 @@ const List<Annotation> annotations = [
       '困难成为信息生产的持续来源',
       '压力被左移为预警信号，而非终点',
     ],
+    action: '遇到阻塞时立刻对自己说："我又发现了一个问题"（注意用"发现"而不是"遇到"），然后花1分钟把这个问题写进日志。它从压在你身上的石头，变成了你产出给团队的养料。',
   ),
   Annotation(
     id: 'anno-3',
@@ -145,6 +149,7 @@ const List<Annotation> annotations = [
       '清晰意图比亲自执行更重要',
       '认知上的升维而非简单分工',
     ],
+    action: '当你想插手具体执行时，把手从键盘上拿开。只写下一个方向性意图（例如"把这个建模思路跑通"），交给助理，让她自己去组装路径。你只负责澄明意图，不负责铺设轨道。',
   ),
   Annotation(
     id: 'anno-4',
@@ -158,6 +163,7 @@ const List<Annotation> annotations = [
       '核心是提炼方法而非囤积信息',
       '定义"蒸馏"而非"存储"的知识哲学',
     ],
+    action: '写完一篇日志后，做一次单句蒸馏：如果这篇只能留一段给团队，留哪段？把它放进案例或简介，剩下的让它流动。你的目标是"提炼一次，团队反复使用"。',
   ),
   Annotation(
     id: 'anno-5',
@@ -171,6 +177,7 @@ const List<Annotation> annotations = [
       '价值从市场流行度转到客户真实效用',
       '为体系自主性打开空间',
     ],
+    action: '下次评估一个外部标准或竞品时，先问"它对我们的客户有用吗？"而不是"它在市场上流行吗？"。把判断价值的锚点从外部认可拉回到客户实际受益上。',
   ),
   Annotation(
     id: 'anno-6',
@@ -184,5 +191,6 @@ const List<Annotation> annotations = [
       '元认知的递归升级',
       '构成无限升级的螺旋',
     ],
+    action: '当你意识到自己正在使用某种思维模式（比如叙事重构）时，把这个"意识到"本身也写下来。这等于在思维上又加了一层透镜，持续递归升级你的元认知。',
   ),
 ];
