@@ -1,0 +1,550 @@
+<!doctype html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>认知棱镜 · 4月23日日志透视</title>
+        <style>
+            :root {
+                --bg: #f7f8fc;
+                --card-bg: #ffffff;
+                --left-bg: #f0f4ff;
+                --right-bg: #fef9f0;
+                --text: #2c3e50;
+                --text-light: #4a5568;
+                --accent: #5b6abf;
+                --accent-warm: #c97d60;
+                --prism: #7c8aff;
+                --border: #e2e8f0;
+                --shadow:
+                    0 4px 12px rgba(0, 0, 0, 0.04),
+                    0 1px 2px rgba(0, 0, 0, 0.03);
+                --radius: 20px;
+            }
+
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            body {
+                background: var(--bg);
+                font-family:
+                    "Segoe UI", "PingFang SC", "Microsoft YaHei",
+                    "Helvetica Neue", sans-serif;
+                display: flex;
+                justify-content: center;
+                padding: 2rem 1rem;
+                line-height: 1.6;
+                color: var(--text);
+            }
+
+            .container {
+                max-width: 1100px;
+                width: 100%;
+            }
+
+            header {
+                text-align: center;
+                margin-bottom: 2.5rem;
+            }
+
+            .logo {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 64px;
+                height: 64px;
+                margin-bottom: 0.75rem;
+                background: linear-gradient(135deg, #5b6abf 0%, #8e99e6 100%);
+                border-radius: 18px;
+                box-shadow: 0 8px 18px rgba(91, 106, 191, 0.25);
+                position: relative;
+            }
+
+            .logo::after {
+                content: "";
+                position: absolute;
+                width: 20px;
+                height: 20px;
+                background: rgba(255, 255, 255, 0.7);
+                border-radius: 50%;
+                top: 12px;
+                left: 12px;
+                filter: blur(2px);
+            }
+
+            .logo svg {
+                width: 34px;
+                height: 34px;
+                fill: white;
+                z-index: 1;
+            }
+
+            h1 {
+                font-size: 2.2rem;
+                font-weight: 600;
+                letter-spacing: -0.5px;
+                color: #1e293b;
+                margin-bottom: 0.25rem;
+            }
+
+            .subtitle {
+                color: #64748b;
+                font-size: 1rem;
+                font-weight: 400;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 0.5rem;
+            }
+
+            .subtitle .date {
+                background: #edf2f7;
+                padding: 0.2rem 0.8rem;
+                border-radius: 20px;
+                font-size: 0.9rem;
+                color: #475569;
+            }
+
+            .divider {
+                margin: 1.5rem 0 2rem;
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+                color: #94a3b8;
+                font-size: 0.9rem;
+            }
+
+            .divider::before,
+            .divider::after {
+                content: "";
+                flex: 1;
+                height: 1px;
+                background: linear-gradient(
+                    to right,
+                    transparent,
+                    #cbd5e1,
+                    transparent
+                );
+            }
+
+            .prism-grid {
+                display: flex;
+                flex-direction: column;
+                gap: 2rem;
+            }
+
+            /* 单个认知棱镜卡片 */
+            .prism-card {
+                background: var(--card-bg);
+                border-radius: var(--radius);
+                box-shadow: var(--shadow);
+                display: flex;
+                flex-direction: column;
+                border: 1px solid var(--border);
+                overflow: hidden;
+                transition:
+                    transform 0.2s ease,
+                    box-shadow 0.2s ease;
+            }
+
+            .prism-card:hover {
+                transform: translateY(-2px);
+                box-shadow:
+                    0 12px 24px rgba(0, 0, 0, 0.06),
+                    0 2px 4px rgba(0, 0, 0, 0.04);
+            }
+
+            .card-header {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                padding: 0.8rem 1.2rem;
+                background: #fafbfc;
+                border-bottom: 1px solid var(--border);
+                font-size: 0.85rem;
+                color: #64748b;
+                font-weight: 500;
+            }
+
+            .card-header .dot-left {
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                background: #5b6abf;
+                margin-right: 4px;
+            }
+
+            .card-header .dot-right {
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                background: #c97d60;
+                margin-left: auto;
+                margin-right: 4px;
+            }
+
+            .card-body {
+                display: flex;
+                flex-direction: row;
+            }
+
+            @media (max-width: 700px) {
+                .card-body {
+                    flex-direction: column;
+                }
+            }
+
+            .left-pane,
+            .right-pane {
+                flex: 1;
+                padding: 1.4rem 1.4rem;
+                position: relative;
+            }
+
+            .left-pane {
+                background: #f8faff;
+                border-right: 1px dashed #dce3f0;
+            }
+
+            .right-pane {
+                background: #fffcf8;
+            }
+
+            @media (max-width: 700px) {
+                .left-pane {
+                    border-right: none;
+                    border-bottom: 1px dashed #dce3f0;
+                }
+            }
+
+            .pane-label {
+                font-size: 0.7rem;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                font-weight: 600;
+                margin-bottom: 0.8rem;
+                display: flex;
+                align-items: center;
+                gap: 0.3rem;
+            }
+
+            .pane-label.left {
+                color: #5b6abf;
+            }
+
+            .pane-label.right {
+                color: #c97d60;
+            }
+
+            .quote {
+                font-style: italic;
+                color: #334155;
+                border-left: 3px solid #5b6abf;
+                padding-left: 1rem;
+                margin-bottom: 0.6rem;
+                font-size: 0.95rem;
+                line-height: 1.7;
+                background: linear-gradient(
+                    to right,
+                    rgba(91, 106, 191, 0.03),
+                    transparent
+                );
+                border-radius: 0 8px 8px 0;
+            }
+
+            .insight {
+                font-size: 0.9rem;
+                color: #4a3f35;
+                line-height: 1.7;
+                padding-left: 0.2rem;
+                display: flex;
+                flex-direction: column;
+                gap: 0.3rem;
+            }
+
+            .insight .tag {
+                display: inline-block;
+                background: #fdeee8;
+                color: #b15330;
+                font-size: 0.7rem;
+                font-weight: 600;
+                padding: 0.2rem 0.7rem;
+                border-radius: 20px;
+                margin-right: 0.4rem;
+                letter-spacing: 0.3px;
+                white-space: nowrap;
+            }
+
+            .prism-icon {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 24px;
+                height: 24px;
+                position: absolute;
+                left: 50%;
+                top: 50%;
+                transform: translate(-50%, -50%);
+                background: white;
+                border-radius: 50%;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+                z-index: 2;
+                font-size: 0.8rem;
+                color: #7c8aff;
+            }
+
+            /* 棱镜动画光效 */
+            .prism-glow {
+                position: absolute;
+                width: 40px;
+                height: 40px;
+                background: radial-gradient(
+                    circle,
+                    rgba(124, 138, 255, 0.2) 0%,
+                    transparent 70%
+                );
+                border-radius: 50%;
+                left: 50%;
+                top: 50%;
+                transform: translate(-50%, -50%);
+                filter: blur(6px);
+                z-index: 1;
+                pointer-events: none;
+            }
+
+            footer {
+                margin-top: 3rem;
+                text-align: center;
+                color: #94a3b8;
+                font-size: 0.85rem;
+            }
+
+            .highlight {
+                background: linear-gradient(
+                    120deg,
+                    #fde68a 0%,
+                    #fde68a 40%,
+                    transparent 90%
+                );
+                padding: 0 0.2rem;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <header>
+                <div class="logo">
+                    <svg viewBox="0 0 24 24">
+                        <path
+                            d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
+                        />
+                    </svg>
+                </div>
+                <h1>认知棱镜</h1>
+                <div class="subtitle">
+                    <span>原始日志的光谱分离</span>
+                    <span class="date">2026.04.23</span>
+                </div>
+            </header>
+
+            <div class="divider">
+                <span>✦ 折射 · 叙事重构与认知重构的线索 ✦</span>
+            </div>
+
+            <div class="prism-grid">
+                <!-- 棱镜 1：执行思维 → 构建思维 -->
+                <div class="prism-card">
+                    <div class="card-header">
+                        <span class="dot-left"></span> 入口转换
+                        <span class="dot-right"></span> 元认知框架
+                    </div>
+                    <div class="card-body" style="position: relative">
+                        <div class="prism-glow"></div>
+                        <div class="left-pane">
+                            <div class="pane-label left">📜 原始日志片段</div>
+                            <div class="quote">
+                                “尝试换一种角度去更积极地去面对产生的新想法。就不是要求自己要完成的这种<span
+                                    class="highlight"
+                                    >执行思维</span
+                                >，但是我又发现了新的入口的<span
+                                    class="highlight"
+                                    >构建思维</span
+                                >。”
+                            </div>
+                        </div>
+                        <div class="right-pane">
+                            <div class="pane-label right">🔍 透镜观察</div>
+                            <div class="insight">
+                                <div>
+                                    <span class="tag">自我指涉</span>
+                                    开启了整个认知螺旋的起点。将“完成任务”的压力叙事，重构为“构建新入口”的探索叙事。这不是简单的激励，而是在元层面重新定义了思维活动的意义——从被动响应，到主动创造框架。
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 棱镜 2：问题 → 新发现 -->
+                <div class="prism-card">
+                    <div class="card-header">
+                        <span class="dot-left"></span> 情感反射
+                        <span class="dot-right"></span> 认知安全网
+                    </div>
+                    <div class="card-body" style="position: relative">
+                        <div class="prism-glow"></div>
+                        <div class="left-pane">
+                            <div class="pane-label left">📜 原始日志片段</div>
+                            <div class="quote">
+                                “紧张和压力……尝试重新去叙事转换思维。把‘这是一个<span
+                                    class="highlight"
+                                    >问题</span
+                                >’变成‘我又<span class="highlight">发现</span
+                                >了一个问题’……我每天都面临大量的困难，它大部分都解决不了，所以发现问题本身就是一个很积极的信号。”
+                            </div>
+                        </div>
+                        <div class="right-pane">
+                            <div class="pane-label right">🔍 透镜观察</div>
+                            <div class="insight">
+                                <div>
+                                    <span class="tag">叙事重构</span>
+                                    最频繁也最核心的模式。将“障碍”重构为“养料”，建立了心理上的安全网。这使困难不再是挫败，而变成了信息生产的持续来源。压力被左移为预警信号，而非终点。
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 棱镜 3：执行者 → 意义源头 -->
+                <div class="prism-card">
+                    <div class="card-header">
+                        <span class="dot-left"></span> 角色跃迁
+                        <span class="dot-right"></span> 领导力重构
+                    </div>
+                    <div class="card-body" style="position: relative">
+                        <div class="prism-glow"></div>
+                        <div class="left-pane">
+                            <div class="pane-label left">📜 原始日志片段</div>
+                            <div class="quote">
+                                “把手上的一些维护工作交给了我助理，然后我感觉我的视野一下子<span
+                                    class="highlight"
+                                    >拔高上来</span
+                                >，我就敢去处理业务问题……作为 leader
+                                专注于业务整体控制的这个思路已经建立起来了……我专注于<span
+                                    class="highlight"
+                                    >澄新意图</span
+                                >。”
+                            </div>
+                        </div>
+                        <div class="right-pane">
+                            <div class="pane-label right">🔍 透镜观察</div>
+                            <div class="insight">
+                                <div>
+                                    <span class="tag">角色叙事</span>
+                                    通过移交具体维护任务，重新讲述了自己的工作意义：从“系统的核心引擎”变为“系统的意义源头”。这不仅是分工，更是认知上的升维——清晰意图比亲自执行更重要。
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 棱镜 4：固化与流动 -->
+                <div class="prism-card">
+                    <div class="card-header">
+                        <span class="dot-left"></span> 知识边界
+                        <span class="dot-right"></span> 蒸馏逻辑
+                    </div>
+                    <div class="card-body" style="position: relative">
+                        <div class="prism-glow"></div>
+                        <div class="left-pane">
+                            <div class="pane-label left">📜 原始日志片段</div>
+                            <div class="quote">
+                                “简介相对来讲可以更<span class="highlight"
+                                    >流动</span
+                                >得多……案例就可以更<span class="highlight"
+                                    >固定</span
+                                >一点……只要我知道该怎么提炼，我其实就不用过多地去记这个元认知具体是什么。”
+                            </div>
+                        </div>
+                        <div class="right-pane">
+                            <div class="pane-label right">🔍 透镜观察</div>
+                            <div class="insight">
+                                <div>
+                                    <span class="tag">认知架构</span>
+                                    在流动的思考与固定的团队资产之间找到了动态平衡。核心不是囤积信息，而是提炼方法。这定义了“蒸馏”而非“存储”的知识管理哲学。
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 棱镜 5：标准追随 → 标准定义 -->
+                <div class="prism-card">
+                    <div class="card-header">
+                        <span class="dot-left"></span> 范式突破
+                        <span class="dot-right"></span> 重新锚定价值
+                    </div>
+                    <div class="card-body" style="position: relative">
+                        <div class="prism-glow"></div>
+                        <div class="left-pane">
+                            <div class="pane-label left">📜 原始日志片段</div>
+                            <div class="quote">
+                                “放弃了一个假设，就是说我<span class="highlight"
+                                    >并不是一定要去兼容市场现有的标准</span
+                                >……我们的体系已经高出市场……最重要的事情是能够给我们掏钱的客户用。”
+                            </div>
+                        </div>
+                        <div class="right-pane">
+                            <div class="pane-label right">🔍 透镜观察</div>
+                            <div class="insight">
+                                <div>
+                                    <span class="tag">认知转换</span>
+                                    最彻底的一次认知跳跃。从“适配者”重构为“定义者”。将标准的价值从“市场流行度”重新锚定在“客户真实效用”上，为体系自主性打开了空间。
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 棱镜 6：自我指涉的闭环 -->
+                <div class="prism-card">
+                    <div class="card-header">
+                        <span class="dot-left"></span> 观察者效应
+                        <span class="dot-right"></span> 元认知渗透
+                    </div>
+                    <div class="card-body" style="position: relative">
+                        <div class="prism-glow"></div>
+                        <div class="left-pane">
+                            <div class="pane-label left">📜 原始日志片段</div>
+                            <div class="quote">
+                                “这种<span class="highlight">叙事重构</span
+                                >的方式已经开始渗透到了我的<span
+                                    class="highlight"
+                                    >原思考过程</span
+                                >之中……我又发现了我自己一个认知上的升级和迁移。”
+                            </div>
+                        </div>
+                        <div class="right-pane">
+                            <div class="pane-label right">🔍 透镜观察</div>
+                            <div class="insight">
+                                <div>
+                                    <span class="tag">闭环</span>
+                                    最精妙的自我指涉：你正在用叙事重构的方法，观察并确认叙事重构正在生效。这种元认知的递归，让整个认知棱镜本身也成为了被审视的对象，构成了无限升级的螺旋。
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <footer>
+                <p>🔮 认知棱镜 · 从原始日志到思维模式的光谱分析</p>
+                <p style="font-size: 0.75rem; margin-top: 0.3rem">
+                    每一个片段都折射出叙事重构与认知重构的交织螺旋
+                </p>
+            </footer>
+        </div>
+    </body>
+</html>
