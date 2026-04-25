@@ -28,7 +28,7 @@ class _AnnotationScreenState extends State<AnnotationScreen> {
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
-            final isWide = constraints.maxWidth > 800;
+            final isWide = constraints.maxWidth > 750;
             if (isWide) {
               return _buildDualPane();
             } else {
@@ -44,7 +44,7 @@ class _AnnotationScreenState extends State<AnnotationScreen> {
     return Row(
       children: [
         Expanded(
-          flex: 55,
+          flex: 58,
           child: _buildLogPane(),
         ),
         Container(
@@ -52,7 +52,7 @@ class _AnnotationScreenState extends State<AnnotationScreen> {
           color: const Color(0xFFe8e0d5),
         ),
         Expanded(
-          flex: 45,
+          flex: 42,
           child: _buildAnnotationPane(),
         ),
       ],
@@ -72,11 +72,11 @@ class _AnnotationScreenState extends State<AnnotationScreen> {
     return Container(
       color: const Color(0xFFfdfaf5),
       child: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(18),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
             const Text(
               '2026年4月23日',
               style: TextStyle(
@@ -89,12 +89,12 @@ class _AnnotationScreenState extends State<AnnotationScreen> {
             const Text(
               '创始人日志',
               style: TextStyle(
-                fontSize: 24,
+                fontSize: 22,
                 fontWeight: FontWeight.w700,
                 color: Color(0xFF1a1208),
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             const Text(
               '一次密集的思维重构——从焦虑到构建，从执行到澄明',
               style: TextStyle(
@@ -103,12 +103,12 @@ class _AnnotationScreenState extends State<AnnotationScreen> {
                 color: Color(0xFF6b5e4a),
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
             ...logParagraphs.map((para) => _buildLogParagraph(para)),
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
             const Center(
               child: Text(
-                '—— 日志摘录完毕。点击高亮词查看对应的认知批注。',
+                '—— 点击高亮词查看对应批注。按 Esc 取消选中。',
                 style: TextStyle(
                   fontSize: 12,
                   fontStyle: FontStyle.italic,
@@ -116,7 +116,7 @@ class _AnnotationScreenState extends State<AnnotationScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
           ],
         ),
       ),
@@ -126,7 +126,7 @@ class _AnnotationScreenState extends State<AnnotationScreen> {
   Widget _buildLogParagraph(LogParagraph para) {
     if (para.hotspots.isEmpty) {
       return Padding(
-        padding: const EdgeInsets.only(bottom: 16),
+        padding: const EdgeInsets.only(bottom: 14),
         child: Text(
           para.content,
           style: const TextStyle(
@@ -139,7 +139,7 @@ class _AnnotationScreenState extends State<AnnotationScreen> {
     }
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.only(bottom: 14),
       child: RichText(
         text: TextSpan(
           style: const TextStyle(
@@ -171,12 +171,12 @@ class _AnnotationScreenState extends State<AnnotationScreen> {
           child: GestureDetector(
             onTap: () => _activateAnnotation(hotspot.annotationId),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+              padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 1),
               decoration: BoxDecoration(
                 color: isActive
-                    ? const Color(0xFFffe9a0)
+                    ? const Color(0xFFffe087)
                     : const Color(0xFFfef3c7),
-                borderRadius: BorderRadius.circular(4),
+                borderRadius: BorderRadius.circular(3),
                 border: Border(
                   bottom: BorderSide(
                     color: isActive
@@ -213,39 +213,34 @@ class _AnnotationScreenState extends State<AnnotationScreen> {
     return Container(
       color: const Color(0xFFfaf7f2),
       child: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 8),
-            const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text('🔍', style: TextStyle(fontSize: 14)),
-                SizedBox(width: 6),
-                Text(
-                  '认知批注 · 思维工具箱',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 1,
-                    color: Color(0xFF9b8e7a),
-                  ),
+            const Center(
+              child: Text(
+                '🔍 思维标注',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 1,
+                  color: Color(0xFF9b8e7a),
                 ),
-              ],
+              ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             if (_activeAnnotationId == null)
               Container(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFfffbf5),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Color(0xFFe8d5c0)),
+                  color: const Color(0xFFfffdf8),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Color(0xFFe5dbca)),
                 ),
                 child: const Center(
                   child: Text(
-                    '点击左侧高亮文字，\n这里将展开对应的深度解读。',
+                    '点击左侧高亮文字，\n这里将显示对应的思维工具。',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 13,
@@ -268,150 +263,79 @@ class _AnnotationScreenState extends State<AnnotationScreen> {
     return GestureDetector(
       onTap: () => _activateAnnotation(anno.id),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOutCubic,
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(14),
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.ease,
+        margin: const EdgeInsets.only(bottom: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
-          color: isActive ? const Color(0xFFfffef9) : const Color(0xFFfffbf5),
-          borderRadius: BorderRadius.circular(12),
+          color: isActive ? const Color(0xFFfffef9) : const Color(0xFFfffdf8),
+          borderRadius: BorderRadius.circular(10),
           border: Border.all(
-            color: isActive ? const Color(0xFFc97d60) : const Color(0xFFe8d5c0),
+            color: isActive ? const Color(0xFFc97d60) : const Color(0xFFe5dbca),
             width: isActive ? 1.5 : 1,
           ),
-          boxShadow: [
-            BoxShadow(
-              color: isActive
-                  ? const Color(0xFFc97d60).withValues(alpha: 0.15)
-                  : const Color(0xFF000000).withValues(alpha: 0.04),
-              blurRadius: isActive ? 12 : 6,
-              offset: const Offset(0, 2),
-            ),
-          ],
+          boxShadow: isActive
+              ? [
+                  BoxShadow(
+                    color: const Color(0xFFc97d60).withValues(alpha: 0.08),
+                    blurRadius: 10,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : null,
         ),
         child: Opacity(
-          opacity: isActive ? 1.0 : 0.7,
+          opacity: isActive ? 1.0 : 0.75,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Wrap(
-                spacing: 6,
-                runSpacing: 6,
-                children: anno.tags
-                    .map((tag) => Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFfef0ea),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            tag,
-                            style: const TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w600,
-                              color: Color(0xFFb15330),
-                            ),
-                          ),
-                        ))
-                    .toList(),
-              ),
-              const SizedBox(height: 8),
               Text(
-                '${anno.entry} → ${anno.exit}',
+                anno.title,
                 style: const TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF8b7355),
-                  letterSpacing: 0.5,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF4a3a2a),
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                '"${anno.quote}"',
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontStyle: FontStyle.italic,
+                  color: Color(0xFF9b8e7a),
                 ),
               ),
               const SizedBox(height: 8),
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(6),
-                  border: const Border(
-                    left: BorderSide(
-                      color: Color(0xFFd4c4a8),
-                      width: 2,
-                    ),
-                  ),
+                  color: const Color(0xFFf7faf7),
+                  borderRadius: BorderRadius.circular(5),
                 ),
-                child: Text(
-                  '"${anno.quote}"',
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontStyle: FontStyle.italic,
-                    color: Color(0xFF7a6a55),
-                    height: 1.5,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 10),
-              ...anno.insights.map((insight) => Padding(
-                    padding: const EdgeInsets.only(bottom: 4),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          '▸',
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: Color(0xFFc97d60),
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        Expanded(
-                          child: Text(
-                            insight,
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: Color(0xFF4a3f35),
-                              height: 1.4,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  )),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-              decoration: BoxDecoration(
-                color: const Color(0xFFf4f9f4),
-                borderRadius: BorderRadius.circular(6),
-                border: const Border(
-                  left: BorderSide(
-                    color: Color(0xFFb8d4b8),
-                    width: 3,
-                  ),
-                ),
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    '💡',
-                    style: TextStyle(fontSize: 12),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      anno.action,
-                      style: const TextStyle(
+                child: Row(
+                  children: [
+                    const Text(
+                      '▸',
+                      style: TextStyle(
                         fontSize: 11,
                         color: Color(0xFF3b5e3b),
-                        height: 1.5,
                       ),
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        anno.action,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFF3b5e3b),
+                          height: 1.4,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
             ],
           ),
         ),
