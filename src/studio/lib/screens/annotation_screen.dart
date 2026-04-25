@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:qtcloud_think_studio/models/entities/entities.dart';
-import 'package:qtcloud_think_studio/samples/journal_samples.dart';
-import 'package:qtcloud_think_studio/samples/card_samples.dart';
+import 'package:qtcloud_think_studio/models/journal.dart';
+import 'package:qtcloud_think_studio/samples/journal.dart';
 
 class AnnotationScreen extends StatefulWidget {
   const AnnotationScreen({super.key});
