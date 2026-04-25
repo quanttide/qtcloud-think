@@ -250,14 +250,14 @@ class _AnnotationScreenState extends State<AnnotationScreen> {
                   ),
                 ),
               ),
-            ...cognitiveCards.map((anno) => _buildAnnotationCard(anno)),
+            ...cognitiveCards.map((card) => _buildAnnotationCard(card)),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildAnnotationCard(CognitiveCard card) {
+  Widget _buildAnnotationCard(CardModel card) {
     final isActive = _activeCardId == card.id;
 
     return GestureDetector(
