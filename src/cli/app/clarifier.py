@@ -1,6 +1,6 @@
 import json
 
-from llm_client import chat_once, get_client
+from llm_client import get_client
 from prompts import (
     CLARIFICATION_PROMPT,
     CONTINUE_PROMPT,
@@ -18,7 +18,9 @@ class Clarifier:
     def reflect(self, original: str) -> str:
         """像镜子一样复述用户的想法，并提问帮助澄清"""
         user_msg = CLARIFICATION_PROMPT.format(original=original)
-        response = self.client.chat_once(SYSTEM_PROMPT + "\n\n" + user_msg, "")
+        response = self.client.chat([
+            {"role": "system", "content": SYSTEM_PROMPT + "\n\n" + user_msg},
+        ]).content
         if self.recorder:
             self.recorder.record_api_call()
         return response
@@ -31,7 +33,10 @@ class Clarifier:
                 for msg in conversation
             ]
         )
-        response = self.client.chat_once(system, conversation_text)
+        response = self.client.chat([
+            {"role": "system", "content": system},
+            {"role": "user", "content": conversation_text},
+        ]).content
         if self.recorder:
             self.recorder.record_api_call()
 
@@ -53,7 +58,10 @@ class Clarifier:
                 for msg in conversation
             ]
         )
-        response = self.client.chat_once(system, conversation_text)
+        response = self.client.chat([
+            {"role": "system", "content": system},
+            {"role": "user", "content": conversation_text},
+        ]).content
         if self.recorder:
             self.recorder.record_api_call()
         return response

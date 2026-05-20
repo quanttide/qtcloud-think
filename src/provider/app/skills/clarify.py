@@ -1,4 +1,4 @@
-from app.infrastructure.llm_client import chat_once
+from app.infrastructure.llm_client import get_client
 
 
 class ClarifySkill:
@@ -8,4 +8,6 @@ class ClarifySkill:
         from app.infrastructure.prompts import CLARIFICATION_PROMPT, SYSTEM_PROMPT
 
         user_msg = CLARIFICATION_PROMPT.format(original=original)
-        return chat_once(SYSTEM_PROMPT + "\n\n" + user_msg, "")
+        return get_client().chat([
+            {"role": "system", "content": SYSTEM_PROMPT + "\n\n" + user_msg},
+        ]).content
