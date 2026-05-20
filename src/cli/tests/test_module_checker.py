@@ -4,7 +4,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "app"))
 
-from llm_client import get_client
+from llm_client import chat_once, get_client
 
 
 class ModuleAnalyzer:
@@ -46,7 +46,6 @@ class ModuleAnalyzer:
 
     def __init__(self, src_dir: Path):
         self.src_dir = src_dir
-        self.client = get_client()
         self.modules: dict[str, str] = {}
 
     def _discover_modules(self) -> dict[str, str]:
@@ -66,7 +65,7 @@ class ModuleAnalyzer:
 
         for name, code in self.modules.items():
             prompt = self.RESPONSIBILITY_PROMPT.format(code_content=code[:1500])
-            response = self.client.chat_once(
+            response = chat_once(
                 "你是一个代码架构分析师，擅长概括模块职责。直接返回 JSON，不要有其他内容。",
                 prompt,
             )
@@ -83,7 +82,7 @@ class ModuleAnalyzer:
         """分析模块间的依赖关系"""
         modules_list = list(self.modules.keys())
         prompt = self.RELATIONSHIP_PROMPT.format(modules=", ".join(modules_list))
-        response = self.client.chat_once(
+        response = chat_once(
             "你是一个代码架构分析师，擅长分析模块依赖关系。直接返回 JSON，不要有其他内容。",
             prompt,
         )
@@ -106,7 +105,7 @@ class ModuleAnalyzer:
         )
         prompt = self.DUPLICATE_PROMPT.format(responsibilities=resp_text)
 
-        response = self.client.chat_once(
+        response = chat_once(
             "你是一个代码架构分析师，擅长发现功能重复的模块。直接返回 JSON，不要有其他内容。",
             prompt,
         )
