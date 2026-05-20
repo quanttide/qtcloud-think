@@ -1,5 +1,4 @@
 from app.agents.base import Agent
-from app.infrastructure.llm_client import get_client
 
 METRICS = ["clarity", "completeness", "depth", "coherence", "relevance"]
 
@@ -16,7 +15,6 @@ class Observer(Agent):
     """
 
     def __init__(self):
-        self.client = get_client()
         self.metrics = METRICS
 
     def evaluate(self, conversation: list[dict]) -> dict[str, float]:
