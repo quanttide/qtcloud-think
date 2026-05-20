@@ -3,28 +3,34 @@
 解析 think 日志为记忆卡片
 
 从 docs/archive/journal/think/ 读取原始想法文件，
-使用本地 ollama (qwen2.5-coder:3b) 将内容分类为四种记忆类型的卡片，
+使用 LLM 将内容分类为四种记忆类型的卡片，
 输出到 data/cards/{episodic,semantic,self,procedural}/ 目录。
 
 用法:
     python scripts/parse_think_cards.py              # 解析所有文件
     python scripts/parse_think_cards.py 2026-03-11   # 只解析指定日期
     python scripts/parse_think_cards.py --dry-run    # 预览模式
+
+依赖:
+    pip install quanttide-agent
 """
 
 import json
+import os
 import re
-import subprocess
 import sys
 import uuid
 from datetime import datetime
 from pathlib import Path
 
+from quanttide_agent import LLM
+
 # 配置
 THINK_DIR = Path("docs/archive/journal/think")
 OUTPUT_DIR = Path("data/cards")
-OLLAMA_MODEL = "qwen2.5-coder:3b"
-OLLAMA_BASE_URL = "http://127.0.0.1:11434"
+LLM_MODEL = os.getenv("LLM_MODEL", "deepseek-v4-flash")
+LLM_BASE_URL = os.getenv("LLM_BASE_URL", "https://api.deepseek.com")
+LLM_API_KEY = os.getenv("LLM_API_KEY", "")
 
 CARD_TYPES = {
     "episodic": "事件记忆 - 个人经历的、发生在特定时空的具体事件",
@@ -32,9 +38,6 @@ CARD_TYPES = {
     "self": "自我记忆 - 与自我认知、身份、价值观、情感反思相关的记忆",
     "procedural": "程序性记忆 - 关于怎么做的记忆，技能、流程、操作方法",
 }
-
-TENSE_VALUES = ["past", "present", "future"]
-TYPE_VALUES = ["decision", "plan", "report", "evaluation", "retrospective"]
 
 SYSTEM_PROMPT = """你是一个记忆卡片分类助手。请将输入的思考日志内容拆解为结构化的记忆卡片。
 
@@ -55,34 +58,12 @@ SYSTEM_PROMPT = """你是一个记忆卡片分类助手。请将输入的思考�
 5. 确保四种类型都有覆盖"""
 
 
-def call_ollama(prompt: str, model: str = OLLAMA_MODEL) -> str:
-    """调用本地 ollama API"""
-    import urllib.request
-    import urllib.error
-
-    data = json.dumps(
-        {
-            "model": model,
-            "prompt": prompt,
-            "system": SYSTEM_PROMPT,
-            "stream": False,
-            "format": "json",
-        }
-    ).encode("utf-8")
-
-    req = urllib.request.Request(
-        f"{OLLAMA_BASE_URL}/api/generate",
-        data=data,
-        headers={"Content-Type": "application/json"},
-    )
-
-    try:
-        with urllib.request.urlopen(req, timeout=120) as resp:
-            result = json.loads(resp.read().decode("utf-8"))
-            return result.get("response", "")
-    except Exception as e:
-        print(f"  [WARN] ollama 调用失败: {e}")
-        return ""
+def call_llm(prompt: str) -> str:
+    llm = LLM(model=LLM_MODEL, base_url=LLM_BASE_URL, api_key=LLM_API_KEY)
+    return llm.chat(
+        [{"role": "system", "content": SYSTEM_PROMPT}, {"role": "user", "content": prompt}],
+        response_format={"type": "json_object"},
+    ).content
 
 
 def parse_json_from_llm(text: str) -> list[dict]:
@@ -211,7 +192,7 @@ def process_file(filepath: Path, dry_run: bool = False) -> list[dict]:
         print(f"  [DRY-RUN] 将调用 ollama 解析")
         return []
 
-    response = call_ollama(prompt)
+    response = call_llm(prompt)
     if not response:
         print(f"  [WARN] 无响应，跳过")
         return []

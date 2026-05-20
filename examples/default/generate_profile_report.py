@@ -10,20 +10,24 @@
 用法:
     python scripts/generate_profile_report.py
     python scripts/generate_profile_report.py --output data/report/custom.md
+
+依赖:
+    pip install quanttide-agent
 """
 
 import json
+import os
 import sys
 from datetime import datetime
 from pathlib import Path
 
-import urllib.request
-import urllib.error
+from quanttide_agent import LLM
 
 CARDS_DIR = Path("data/cards")
 DEFAULT_OUTPUT = Path("data/report/profile.md")
-OLLAMA_MODEL = "qwen2.5-coder:3b"
-OLLAMA_BASE_URL = "http://127.0.0.1:11434"
+LLM_MODEL = os.getenv("LLM_MODEL", "deepseek-v4-flash")
+LLM_BASE_URL = os.getenv("LLM_BASE_URL", "https://api.deepseek.com")
+LLM_API_KEY = os.getenv("LLM_API_KEY", "")
 
 CATEGORY_PROFILES = {
     "episodic": {
@@ -123,29 +127,9 @@ def load_cards() -> dict[str, list[dict]]:
     return cards_by_cat
 
 
-def call_ollama(prompt: str, system: str, model: str = OLLAMA_MODEL) -> str:
-    """调用本地 ollama"""
-    data = json.dumps(
-        {
-            "model": model,
-            "prompt": prompt,
-            "system": system,
-            "stream": False,
-        }
-    ).encode("utf-8")
-
-    req = urllib.request.Request(
-        f"{OLLAMA_BASE_URL}/api/generate",
-        data=data,
-        headers={"Content-Type": "application/json"},
-    )
-
-    try:
-        with urllib.request.urlopen(req, timeout=120) as resp:
-            result = json.loads(resp.read().decode("utf-8"))
-            return result.get("response", "")
-    except Exception as e:
-        return f"[调用失败: {e}]"
+def call_llm(prompt: str, system: str) -> str:
+    llm = LLM(model=LLM_MODEL, base_url=LLM_BASE_URL, api_key=LLM_API_KEY)
+    return llm.chat([{"role": "system", "content": system}, {"role": "user", "content": prompt}]).content
 
 
 def build_cards_text(cards: list[dict]) -> str:
@@ -173,7 +157,7 @@ def generate_profile(cards_by_cat: dict[str, list[dict]]) -> str:
         prompt = f"请分析以下{info['title']}卡片，刻画作者的特征：\n\n{cards_text}"
 
         print(f"  分析: {info['title']} ({len(cards)} 张卡片)")
-        analysis = call_ollama(prompt, info["prompt"])
+        analysis = call_llm(prompt, info["prompt"])
 
         sections.append(f"## {info['title']}\n\n{info['desc']}\n\n{analysis}\n")
 
@@ -225,7 +209,7 @@ def generate_cross_analysis(cards_by_cat: dict[str, list[dict]]) -> str:
     )
 
     print("  生成跨类别综合分析...")
-    return call_ollama(prompt, cross_prompt)
+    return call_llm(prompt, cross_prompt)
 
 
 def generate_time_analysis(cards_by_cat: dict[str, list[dict]]) -> str:
@@ -279,7 +263,7 @@ def generate_time_analysis(cards_by_cat: dict[str, list[dict]]) -> str:
     )
 
     print("  生成时间维度分析...")
-    return call_ollama(prompt, time_prompt)
+    return call_llm(prompt, time_prompt)
 
 
 def generate_counter_evidence(cards_by_cat: dict[str, list[dict]]) -> str:
@@ -326,7 +310,7 @@ def generate_counter_evidence(cards_by_cat: dict[str, list[dict]]) -> str:
     )
 
     print("  生成否定证据分析...")
-    return call_ollama(prompt, counter_prompt)
+    return call_llm(prompt, counter_prompt)
 
 
 def generate_summary(cards_by_cat: dict[str, list[dict]]) -> str:
@@ -374,7 +358,7 @@ def generate_summary(cards_by_cat: dict[str, list[dict]]) -> str:
     )
 
     print("  生成综合画像...")
-    return call_ollama(prompt, summary_prompt)
+    return call_llm(prompt, summary_prompt)
 
 
 def main():
