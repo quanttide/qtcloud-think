@@ -1,5 +1,7 @@
 use std::path::{Path, PathBuf};
 
+use crate::model::IntentionQueryResult;
+
 use quanttide_think::{
     domain::Domain,
     intention::Intention,
@@ -106,6 +108,76 @@ impl Repo {
             intentions,
             thoughts,
         })
+    }
+
+    /// 查询指定 world/period/domain 的意向列表。
+    pub fn intentions(&self, world: &str, period: &str, domain: &str) -> Result<Vec<Intention>, String> {
+        let file = self.load(world, period, domain)?;
+        Ok(file.intentions.unwrap_or_default())
+    }
+
+    /// 多条件过滤查询某 world 下所有 period/domain 的意向。
+    pub fn all_intentions(
+        &self,
+        world: &str,
+        priority: Option<&str>,
+        risk: Option<&str>,
+        level: Option<&str>,
+    ) -> Result<Vec<IntentionQueryResult>, String> {
+        let mut results = Vec::new();
+        let periods = self.periods(world)?;
+        for p in &periods {
+            let domains = self.domains(world, p)?;
+            for d in &domains {
+                if let Ok(file) = self.load(world, p, &d.name) {
+                    if let Some(intents) = file.intentions {
+                        for i in intents {
+                            if let Some(p_val) = priority {
+                                if i.priority.name != p_val { continue; }
+                            }
+                            if let Some(r_val) = risk {
+                                if i.risk.name != r_val { continue; }
+                            }
+                            if let Some(l_val) = level {
+                                if i.level.name != l_val { continue; }
+                            }
+                            results.push(IntentionQueryResult {
+                                world: world.to_string(),
+                                period: p.clone(),
+                                domain: d.name.clone(),
+                                intention: i,
+                            });
+                        }
+                    }
+                }
+            }
+        }
+        Ok(results)
+    }
+
+    /// 按 UUID 查询意向详情。
+    pub fn intention_by_id(&self, world: &str, id: &str) -> Result<Option<IntentionQueryResult>, String> {
+        let periods = self.periods(world)?;
+        for p in &periods {
+            let domains = self.domains(world, p)?;
+            for d in &domains {
+                if let Ok(file) = self.load(world, p, &d.name) {
+                    if let Some(intents) = file.intentions {
+                        for i in intents {
+                            if i.id.to_string() == id {
+                                return Ok(Some(IntentionQueryResult {
+                                    world: world.to_string(),
+                                    period: p.clone(),
+                                    domain: d.name.clone(),
+                                    intention: i,
+                                }));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        Ok(None)
     }
 
     /// 描述某周各领域的数据情况。
