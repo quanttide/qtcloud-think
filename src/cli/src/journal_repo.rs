@@ -14,6 +14,9 @@ pub struct JournalRepository {
 }
 
 impl JournalRepository {
+    pub fn from_config(cfg: &crate::config::Config) -> Self {
+        Self::open(&cfg.journal_path)
+    }
     /// Open a journal at the given path.
     pub fn open<P: AsRef<Path>>(path: P) -> Self {
         Self { path: path.as_ref().to_path_buf() }
