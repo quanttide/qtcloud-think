@@ -13,7 +13,6 @@ impl Config {
         }
     }
 
-    #[cfg(test)]
     pub fn for_tests() -> Self {
         let path = std::env::var("JOURNAL_PATH")
             .unwrap_or_else(|_| "../../../../data/journal".to_string());
