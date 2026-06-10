@@ -1,14 +1,5 @@
 /// 数据类型。
 
-/// 一个领域在某周的数据覆盖度。
-#[derive(Debug)]
-pub struct Coverage {
-    pub domain: String,
-    pub intentions: usize,
-    pub schemas: bool,
-    pub relations: usize,
-}
-
 /// 一个领域在某周的快照。
 #[derive(Debug)]
 pub struct Snapshot {

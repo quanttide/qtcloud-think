@@ -107,6 +107,30 @@ impl Repo {
             thoughts,
         })
     }
+
+    /// 描述某周各领域的数据情况。
+    pub fn describe(&self, world: &str, period: &str) -> Result<Vec<DataCoherence>, String> {
+        let domains = self.domains(world, period)?;
+        let mut results = Vec::new();
+        for d in &domains {
+            let file = self.load(world, period, &d.name)?;
+            results.push(DataCoherence {
+                domain: d.name.clone(),
+                intentions: file.intentions.as_ref().map(|v| v.len()).unwrap_or(0),
+                schemas: file.schemas.is_some(),
+                relations: file.relations().len(),
+            });
+        }
+        Ok(results)
+    }
+}
+
+#[derive(Debug)]
+pub struct DataCoherence {
+    pub domain: String,
+    pub intentions: usize,
+    pub schemas: bool,
+    pub relations: usize,
 }
 
 #[derive(Debug, Clone)]
