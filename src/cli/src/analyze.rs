@@ -1,76 +1,10 @@
 /// 分析模块：跨周对比、覆盖率、演化轨迹。
 ///
 /// 所有函数都是纯数据变换——输入 Repo，输出结构化数据，不关心输出格式。
+use crate::model::{
+    Coverage, Diff, IntentionDiff, IntentionEntry, IntentionState, SchemaDiff, Snapshot,
+};
 use crate::repo::Repo;
-
-/// 一个领域在两段时间点之间的差异。
-#[derive(Debug)]
-pub struct Diff {
-    pub domain: String,
-    pub prev: String,
-    pub curr: String,
-    /// 两段之间的每条意图的变化（新增、修改、删除）。
-    pub intentions: Vec<IntentionDiff>,
-    /// 图式的实体变化。
-    pub schema: SchemaDiff,
-}
-
-/// 一条意图在两个时间点的状态。
-#[derive(Debug)]
-pub struct IntentionDiff {
-    pub title: String,
-    /// 上一期状态。None 表示该意图在上一期不存在（新增）。
-    pub prev: Option<IntentionState>,
-    /// 当前期状态。None 表示该意图在当前期不存在（消失）。
-    pub curr: Option<IntentionState>,
-}
-
-/// 意图在某个时间点的维度状态。
-#[derive(Debug)]
-pub struct IntentionState {
-    pub priority: String,
-    pub risk: String,
-    pub level: String,
-}
-
-/// 图式的实体变化。
-#[derive(Debug)]
-pub struct SchemaDiff {
-    /// 上一期的实体名列表。
-    pub prev_entities: Vec<String>,
-    /// 当前期的实体名列表。
-    pub curr_entities: Vec<String>,
-    /// 当前期新增的实体。
-    pub added: Vec<String>,
-    /// 当前期消失的实体。
-    pub removed: Vec<String>,
-}
-
-/// 一个领域在某周的覆盖度统计。
-#[derive(Debug)]
-pub struct Coverage {
-    pub domain: String,
-    pub intentions: usize,
-    pub schemas: bool,
-    pub relations: usize,
-}
-
-/// 一个领域在某周的快照。
-#[derive(Debug)]
-pub struct Snapshot {
-    pub period: String,
-    pub intentions: Vec<IntentionEntry>,
-    pub entities: Vec<String>,
-}
-
-/// 快照中的一条意图记录。
-#[derive(Debug)]
-pub struct IntentionEntry {
-    pub title: String,
-    pub priority: String,
-    pub level: String,
-    pub risk: String,
-}
 
 /// 对比一个领域在两个周的数据差异。
 pub fn compare_domain(repo: &Repo, world: &str, prev: &str, curr: &str, domain: &str) -> Result<Diff, String> {
