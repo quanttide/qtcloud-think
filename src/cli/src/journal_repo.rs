@@ -9,11 +9,11 @@ use quanttide_think::{
 };
 
 #[derive(Debug)]
-pub struct Journal {
+pub struct JournalRepository {
     path: PathBuf,
 }
 
-impl Journal {
+impl JournalRepository {
     /// Open a journal at the given path.
     pub fn open<P: AsRef<Path>>(path: P) -> Self {
         Self { path: path.as_ref().to_path_buf() }
@@ -148,21 +148,21 @@ mod tests {
 
     #[test]
     fn test_worlds() {
-        let journal = Journal::open("../../../../data/journal");
-        let worlds = journal.worlds().unwrap();
+        let repo = JournalRepository::open("../../../../data/journal");
+        let worlds = repo.worlds().unwrap();
         assert!(worlds.contains(&"quanttide-founder".to_string()));
     }
 
     #[test]
     fn test_periods() {
-        let journal = Journal::open("../../../../data/journal");
-        let periods = journal.periods("quanttide-founder").unwrap();
+        let repo = JournalRepository::open("../../../../data/journal");
+        let periods = repo.periods("quanttide-founder").unwrap();
         assert!(periods.contains(&"2026-W23".to_string()));
     }
 
     #[test]
     fn test_domains() {
-        let journal = Journal::open("../../../../data/journal");
+        let journal = JournalRepository::open("../../../../data/journal");
         let domains = journal.domains("quanttide-founder", "2026-W23").unwrap();
         let names: Vec<&str> = domains.iter().map(|d| d.name.as_str()).collect();
         assert!(names.contains(&"think"));
@@ -170,7 +170,7 @@ mod tests {
 
     #[test]
     fn test_load() {
-        let journal = Journal::open("../../../../data/journal");
+        let journal = JournalRepository::open("../../../../data/journal");
         let df = journal.load("quanttide-founder", "2026-W23", "think").unwrap();
         assert!(df.situations.iter().any(|js| js.situation.name == "think"));
     }
