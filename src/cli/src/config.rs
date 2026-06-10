@@ -12,4 +12,11 @@ impl Config {
             journal_path: PathBuf::from(journal_path),
         }
     }
+
+    #[cfg(test)]
+    pub fn for_tests() -> Self {
+        let path = std::env::var("JOURNAL_PATH")
+            .unwrap_or_else(|_| "../../../../data/journal".to_string());
+        Self { journal_path: PathBuf::from(path) }
+    }
 }
