@@ -1,6 +1,6 @@
 [package]
 name = "qtcloud-think-cli"
-version = "0.1.0"
+version = "0.1.0-alpha.1"
 edition = "2021"
 description = "量潮思考云命令行工具"
 
