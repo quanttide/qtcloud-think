@@ -73,7 +73,7 @@ pub struct IntentionEntry {
 }
 
 /// 对比一个领域在两个周的数据差异。
-pub fn diff_domain(repo: &Repo, world: &str, prev: &str, curr: &str, domain: &str) -> Result<Diff, String> {
+pub fn compare_domain(repo: &Repo, world: &str, prev: &str, curr: &str, domain: &str) -> Result<Diff, String> {
     let a = repo.load(world, prev, domain)?;
     let b = repo.load(world, curr, domain)?;
 
@@ -121,11 +121,11 @@ pub fn diff_domain(repo: &Repo, world: &str, prev: &str, curr: &str, domain: &st
 }
 
 /// 对比整个周的所有领域的数据差异。
-pub fn diff_period(repo: &Repo, world: &str, prev: &str, curr: &str) -> Result<Vec<Diff>, String> {
+pub fn compare_period(repo: &Repo, world: &str, prev: &str, curr: &str) -> Result<Vec<Diff>, String> {
     let domains = repo.domains(world, curr)?;
     let mut results = Vec::new();
     for d in &domains {
-        if let Ok(diff) = diff_domain(repo, world, prev, curr, &d.name) {
+        if let Ok(diff) = compare_domain(repo, world, prev, curr, &d.name) {
             if !diff.intentions.is_empty() || !diff.schema.added.is_empty() || !diff.schema.removed.is_empty() {
                 results.push(diff);
             }
@@ -135,7 +135,7 @@ pub fn diff_period(repo: &Repo, world: &str, prev: &str, curr: &str) -> Result<V
 }
 
 /// 统计某周每个领域的数据覆盖度。
-pub fn coverage(repo: &Repo, world: &str, period: &str) -> Result<Vec<Coverage>, String> {
+pub fn summarize_coverage(repo: &Repo, world: &str, period: &str) -> Result<Vec<Coverage>, String> {
     let domains = repo.domains(world, period)?;
     let mut results = Vec::new();
     for d in &domains {
@@ -151,7 +151,7 @@ pub fn coverage(repo: &Repo, world: &str, period: &str) -> Result<Vec<Coverage>,
 }
 
 /// 追踪一个领域在所有周中的演化轨迹。
-pub fn evolution(repo: &Repo, world: &str, domain: &str) -> Result<Vec<Snapshot>, String> {
+pub fn track_evolution(repo: &Repo, world: &str, domain: &str) -> Result<Vec<Snapshot>, String> {
     let periods = repo.periods(world)?;
     let mut snapshots = Vec::new();
     for p in &periods {
