@@ -1,2 +1,2 @@
 pub mod config;
-pub mod journal_repo;
+pub mod repo;

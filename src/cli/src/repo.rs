@@ -9,11 +9,11 @@ use quanttide_think::{
 };
 
 #[derive(Debug)]
-pub struct JournalRepository {
+pub struct Repo {
     path: PathBuf,
 }
 
-impl JournalRepository {
+impl Repo {
     pub fn from_config(cfg: &crate::config::Config) -> Self {
         Self::open(&cfg.journal_path)
     }
@@ -151,21 +151,21 @@ mod tests {
 
     #[test]
     fn test_worlds() {
-        let repo = JournalRepository::open("../../../../data/journal");
+        let repo = Repo::open("../../../../data/journal");
         let worlds = repo.worlds().unwrap();
         assert!(worlds.contains(&"quanttide-founder".to_string()));
     }
 
     #[test]
     fn test_periods() {
-        let repo = JournalRepository::open("../../../../data/journal");
+        let repo = Repo::open("../../../../data/journal");
         let periods = repo.periods("quanttide-founder").unwrap();
         assert!(periods.contains(&"2026-W23".to_string()));
     }
 
     #[test]
     fn test_domains() {
-        let journal = JournalRepository::open("../../../../data/journal");
+        let journal = Repo::open("../../../../data/journal");
         let domains = journal.domains("quanttide-founder", "2026-W23").unwrap();
         let names: Vec<&str> = domains.iter().map(|d| d.name.as_str()).collect();
         assert!(names.contains(&"think"));
@@ -173,7 +173,7 @@ mod tests {
 
     #[test]
     fn test_load() {
-        let journal = JournalRepository::open("../../../../data/journal");
+        let journal = Repo::open("../../../../data/journal");
         let df = journal.load("quanttide-founder", "2026-W23", "think").unwrap();
         assert!(df.situations.iter().any(|js| js.situation.name == "think"));
     }
