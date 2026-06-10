@@ -2,7 +2,7 @@
 ///
 /// 所有函数都是纯数据变换——输入 Repo，输出结构化数据，不关心输出格式。
 use crate::model::{
-    Coverage, Diff, IntentionDiff, IntentionEntry, IntentionState, SchemaDiff, Snapshot,
+    Diff, IntentionDiff, IntentionEntry, IntentionState, SchemaDiff, Snapshot,
 };
 use crate::repo::Repo;
 
@@ -64,22 +64,6 @@ pub fn compare_period(repo: &Repo, world: &str, prev: &str, curr: &str) -> Resul
                 results.push(diff);
             }
         }
-    }
-    Ok(results)
-}
-
-/// 统计某周每个领域的数据覆盖度。
-pub fn summarize_coverage(repo: &Repo, world: &str, period: &str) -> Result<Vec<Coverage>, String> {
-    let domains = repo.domains(world, period)?;
-    let mut results = Vec::new();
-    for d in &domains {
-        let file = repo.load(world, period, &d.name)?;
-        results.push(Coverage {
-            domain: d.name.clone(),
-            intentions: file.intentions.as_ref().map(|v| v.len()).unwrap_or(0),
-            schemas: file.schemas.is_some(),
-            relations: file.relations().len(),
-        });
     }
     Ok(results)
 }
