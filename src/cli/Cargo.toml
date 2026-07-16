@@ -5,8 +5,8 @@ edition = "2021"
 description = "量潮思考云命令行工具"
 
 [dependencies]
-quanttide-think = { path = "../../../../packages/quanttide-think-toolkit/packages/rust" }
-quanttide-agent = { path = "../../../../packages/quanttide-agent-toolkit/packages/rust" }
+quanttide-think = "0.1.0"
+quanttide-agent = "0.1.0"
 serde = { version = "1", features = ["derive"] }
 serde_yaml = "0.9"
 chrono = { version = "0.4", features = ["serde"] }
