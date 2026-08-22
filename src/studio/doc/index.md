@@ -12,11 +12,10 @@
 ```
 lib/
 ├── main.dart                  # 应用壳 + 导航（4D 概念，当前启用感知/理解两环）
-├── domain/
-│   ├── thought.dart           # 想法模型（原始/加工中/实例三态）
-│   └── thought_store.dart     # 仓储接口（ThoughtStore 抽象，DDD Repository）
-├── infrastructure/
-│   └── local_thought_store.dart # 仓储实现（本地文件，可换 OSS/DB）
+├── models/
+│   └── thought.dart           # 想法模型（原始/加工中/实例三态）
+├── repositories/
+│   └── thought_repository.dart # 想法仓储（DDD Repository——对齐 qtcloud-agent 惯例）
 ├── screens/
 │   ├── perceive_screen.dart   # 感知页：想法输入 + 想法流时间线 + 导入素材
 │   └── understand_screen.dart # 理解页：清晰度判断 → 澄清对话 → 加工结构化 → 实例
@@ -81,11 +80,10 @@ Thought(structured) = 情境意识实例 → 实例区呈现
 
 ## 实施分解
 
-### 分解 1：领域层 + 基础设施层（domain + infrastructure）
+### 分解 1：模型 + 仓储（models + repositories）
 
-- [ ] `domain/thought.dart`：Thought 模型（id/content/source/status/clarity/facts/feelings/actions/createdAt）
-- [ ] `domain/thought_store.dart`：ThoughtStore 仓储接口（抽象）
-- [ ] `infrastructure/local_thought_store.dart`：本地文件实现（读写想法列表）
+- [ ] `models/thought.dart`：Thought 模型（id/content/source/status/clarity/facts/feelings/actions/createdAt）
+- [ ] `repositories/thought_repository.dart`：想法仓储（DDD Repository——本地文件读写）
 - [ ] 单元测试：Thought 序列化、仓储读写
 
 ### 分解 2：感知页（perceive_screen）

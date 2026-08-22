@@ -1,4 +1,4 @@
-# 想法仓储设计（domain/thought_store.dart）
+# 想法仓储设计（repositories/thought_repository.dart）
 
 ## 定位
 
@@ -7,7 +7,7 @@
 ## 仓储接口（领域层依赖）
 
 ```
-ThoughtStore（抽象）
+ThoughtRepository
 ├── load() → List<Thought>          # 启动加载
 ├── add(Thought)                    # 新增想法
 ├── update(Thought)                 # 更新（状态/清晰度/结构化）
@@ -19,7 +19,7 @@ ThoughtStore（抽象）
 ## 实现（基础设施层 infrastructure/）
 
 ```
-LocalFileThoughtStore implements ThoughtStore   # infrastructure/local_thought_store.dart
+ThoughtRepository（本地文件实现——对齐 qtcloud-agent 惯例）
 └── 本地文件：~/.qtcloud-think/thoughts.json
     （QTCLOUD_THINK_DATA 环境变量可覆盖；未来可换 OSS/DB 实现）
 ```
