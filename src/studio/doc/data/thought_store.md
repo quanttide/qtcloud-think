@@ -7,8 +7,10 @@
 ## 存储方案
 
 ```
-数据根：~/.qtcloud-think/（可被 QTCLOUD_THINK_DATA 环境变量覆盖）
+仓储（用户数据，git 忽略）：~/.qtcloud-think/（QTCLOUD_THINK_DATA 环境变量可覆盖）
 └── thoughts.json      # 全部想法（Thought 列表，JSON）
+
+种子（示例数据，git 跟踪）：src/studio/assets/data/（待建——演示想法/示例日志）
 ```
 
 - 单文件 JSON（想法量级小，简单优先）

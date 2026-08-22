@@ -51,7 +51,8 @@ htmlcov/
 .env.local
 
 # Data (dynamic, never commit)
-/src/studio/data/
+# 仓储（用户数据）在 ~/.qtcloud-think/（环境变量可覆盖），不在项目内
+# 种子数据（示例）在 src/studio/assets/data/（git 跟踪）
 
 # OS
 .DS_Store
