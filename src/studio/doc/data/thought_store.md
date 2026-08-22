@@ -1,25 +1,13 @@
-# 想法存储设计（data/thought_store.dart）
+# 想法仓储设计（data/thought_store.dart）
 
 ## 定位
 
-想法的本地数据层——独立管理数据（不依赖 CLI），文件即数据。
+领域驱动设计的**仓储层（Repository）**——封装想法数据访问，隔离领域层与基础设施层。领域层依赖 `ThoughtStore` 接口，不依赖存储实现。
 
-## 存储方案
-
-```
-仓储（用户数据，git 忽略）：~/.qtcloud-think/（QTCLOUD_THINK_DATA 环境变量可覆盖）
-└── thoughts.json      # 全部想法（Thought 列表，JSON）
-
-种子（示例数据，git 跟踪）：src/studio/assets/data/（待建——演示想法/示例日志）
-```
-
-- 单文件 JSON（想法量级小，简单优先）
-- 每次变更全量写（原子写：临时文件 + rename）
-
-## 接口
+## 仓储接口（领域层依赖）
 
 ```
-ThoughtStore
+ThoughtStore（抽象）
 ├── load() → List<Thought>          # 启动加载
 ├── add(Thought)                    # 新增想法
 ├── update(Thought)                 # 更新（状态/清晰度/结构化）
@@ -27,6 +15,21 @@ ThoughtStore
 ├── byStatus(ThoughtStatus) → List  # 按状态过滤（raw/structured…）
 └── save()                          # 持久化
 ```
+
+## 实现（基础设施层）
+
+```
+LocalFileThoughtStore implements ThoughtStore
+└── 本地文件：~/.qtcloud-think/thoughts.json
+    （QTCLOUD_THINK_DATA 环境变量可覆盖；未来可换 OSS/DB 实现）
+```
+
+- 单文件 JSON（想法量级小，简单优先）
+- 每次变更全量写（原子写：临时文件 + rename）
+
+## 种子数据（示例，非仓储概念）
+
+种子（演示想法/示例日志）在 `src/studio/assets/data/`（git 跟踪）——加载时作为初始数据源（可区分来源），与仓储接口无关。
 
 ## 并发/一致性
 
