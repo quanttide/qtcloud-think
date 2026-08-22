@@ -15,12 +15,12 @@ lib/
 ├── models/
 │   └── thought.dart           # 想法模型（原始/加工中/实例三态）
 ├── repositories/
-│   └── thought_repository.dart # 想法仓储（DDD Repository——对齐 qtcloud-agent 惯例）
+│   ├── thought_repository.dart   # 想法仓储（DDD Repository——本地文件读写）
+│   └── clarify_repository.dart   # AI 加工访问（调 provider——判断/澄清/结构化）
 ├── screens/
 │   ├── perceive_screen.dart   # 感知页：想法输入 + 想法流时间线 + 导入素材
 │   └── understand_screen.dart # 理解页：清晰度判断 → 澄清对话 → 加工结构化 → 实例
-└── services/
-    └── clarify_service.dart   # AI 加工服务（清晰度判断/澄清/结构化，调 provider）
+└── main.dart
 ```
 
 ## 数据模型
@@ -58,7 +58,7 @@ Thought（想法——情境意识实例的原料）
 ```
 感知页（输入/导入）→ Thought(raw)
     ↓
-理解页 → AI 判断清晰度（services/clarify_service）
+理解页 → AI 判断清晰度（repositories/clarify_repository）
     ├── 清楚 → 直接结构化
     └── 不清楚 → 澄清对话 → 结构化
     ↓ 用户确认/修改
@@ -95,7 +95,7 @@ Thought(structured) = 情境意识实例 → 实例区呈现
 
 ### 分解 3：理解页（understand_screen）
 
-- [ ] 清晰度区：调 services/clarify_service 判断清楚/不清楚 + 用户标记需澄清
+- [ ] 清晰度区：调 repositories/clarify_repository 判断清楚/不清楚 + 用户标记需澄清
 - [ ] 澄清区：多轮对话（AI 追问、用户回答）
 - [ ] 结构化区：AI 拆解事实/感受/行动 + 用户确认/修改
 - [ ] 实例区：结构化完成的想法（情境意识实例）列表呈现

@@ -1,4 +1,4 @@
-# AI 加工服务设计（services/clarify_service.dart）
+# AI 加工访问设计（repositories/clarify_repository.dart）
 
 ## 定位
 
@@ -7,7 +7,7 @@
 ## 接口
 
 ```
-ClarifyService
+ClarifyRepository
 ├── judgeClarity(Thought) → ClarityResult
 │     # AI 判断想法清楚/不清楚（+ 简要理由）
 ├── clarify(Thought, String userReply) → ClarifyReply
@@ -27,7 +27,7 @@ StructureResult: { facts: [String], feelings: [String], actions: [String] }
 
 ## 实现要点
 
-- 调 provider（http 现有依赖）——AI 加工接口
+- 调 provider（http 现有依赖）——AI 加工接口（**数据访问，属仓储层**）
 - **失败降级**：AI 不可用时——清晰度默认 unclear？不——降级为"跳过 AI，直接结构化"？——设计决策：AI 失败 → 提示用户，想法保持 raw（不造假结果）
 - 超时处理（AI 慢 → 加载态 + 可取消）
 
