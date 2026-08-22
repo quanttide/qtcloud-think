@@ -1,4 +1,4 @@
-# 想法仓储设计（data/thought_store.dart）
+# 想法仓储设计（domain/thought_store.dart）
 
 ## 定位
 
@@ -16,10 +16,10 @@ ThoughtStore（抽象）
 └── save()                          # 持久化
 ```
 
-## 实现（基础设施层）
+## 实现（基础设施层 infrastructure/）
 
 ```
-LocalFileThoughtStore implements ThoughtStore
+LocalFileThoughtStore implements ThoughtStore   # infrastructure/local_thought_store.dart
 └── 本地文件：~/.qtcloud-think/thoughts.json
     （QTCLOUD_THINK_DATA 环境变量可覆盖；未来可换 OSS/DB 实现）
 ```

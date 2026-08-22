@@ -12,15 +12,16 @@
 ```
 lib/
 ├── main.dart                  # 应用壳 + 导航（4D 概念，当前启用感知/理解两环）
-├── models/
-│   └── thought.dart           # 想法模型（原始/加工中/实例三态）
+├── domain/
+│   ├── thought.dart           # 想法模型（原始/加工中/实例三态）
+│   └── thought_store.dart     # 仓储接口（ThoughtStore 抽象，DDD Repository）
+├── infrastructure/
+│   └── local_thought_store.dart # 仓储实现（本地文件，可换 OSS/DB）
 ├── screens/
 │   ├── perceive_screen.dart   # 感知页：想法输入 + 想法流时间线 + 导入素材
 │   └── understand_screen.dart # 理解页：清晰度判断 → 澄清对话 → 加工结构化 → 实例
-├── services/
-│   └── clarify_service.dart   # AI 加工服务（清晰度判断/澄清/结构化，调 provider）
-└── data/
-    └── thought_store.dart     # 想法存储（本地文件，独立数据层）
+└── services/
+    └── clarify_service.dart   # AI 加工服务（清晰度判断/澄清/结构化，调 provider）
 ```
 
 ## 数据模型
@@ -80,11 +81,12 @@ Thought(structured) = 情境意识实例 → 实例区呈现
 
 ## 实施分解
 
-### 分解 1：数据层（models + data）
+### 分解 1：领域层 + 基础设施层（domain + infrastructure）
 
-- [ ] `models/thought.dart`：Thought 模型（id/content/source/status/clarity/facts/feelings/actions/createdAt）
-- [ ] `data/thought_store.dart`：本地文件存储（读写想法列表，独立数据层）
-- [ ] 单元测试：Thought 序列化、store 读写
+- [ ] `domain/thought.dart`：Thought 模型（id/content/source/status/clarity/facts/feelings/actions/createdAt）
+- [ ] `domain/thought_store.dart`：ThoughtStore 仓储接口（抽象）
+- [ ] `infrastructure/local_thought_store.dart`：本地文件实现（读写想法列表）
+- [ ] 单元测试：Thought 序列化、仓储读写
 
 ### 分解 2：感知页（perceive_screen）
 
