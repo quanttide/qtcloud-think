@@ -38,6 +38,12 @@ structured（加工完成 = 情境意识实例）★
 - JSON 序列化/反序列化（toJson/fromJson，全字段）
 - 存本地文件（thought_store 使用）
 
+## 测试（models/thought_test.dart）
+
+- JSON 往返无损（toJson → fromJson 全字段一致，含 clarifyLog 空/非空）
+- 状态流转合法（raw → clarifying → structured；非法回退拒绝）
+- 默认值正确（clarity=null、清单=空）
+
 ## 验收
 
 - 三态流转正确（raw → clarifying → structured）

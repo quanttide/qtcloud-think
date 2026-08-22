@@ -67,6 +67,13 @@
 | 结构化 | Thought.facts/feelings/actions（用户确认后落库） |
 | 实例 | Thought(status=structured) = 情境意识实例 |
 
+## 测试（screens/understand_screen_test.dart）
+
+- 清晰度分支（假 clarify：clear → "开始结构化"；unclear → "开始澄清"）
+- 澄清对话（输入回答 → 发送 → 对话追加）
+- 结构化确认（点"确认加工" → 仓储 update 为 structured → 出现在实例区）
+- 失败提示（clarify 抛错 → 显示错误，想法保持 raw）
+
 ## 验收
 
 - AI 判断清晰度 → 清楚/不清楚 分支正确

@@ -31,6 +31,13 @@ StructureResult: { facts: [String], feelings: [String], actions: [String] }
 - **失败降级**：AI 不可用时——清晰度默认 unclear？不——降级为"跳过 AI，直接结构化"？——设计决策：AI 失败 → 提示用户，想法保持 raw（不造假结果）
 - 超时处理（AI 慢 → 加载态 + 可取消）
 
+## 测试（repositories/clarify_repository_test.dart）
+
+- 清晰度判断（MockClient 返回 200 → ClarityResult 解析正确）
+- 澄清多轮（上下文正确传递——clarifyLog 追加）
+- 结构化（facts/feelings/actions 解析）
+- 失败降级（500/超时 → 抛明确错误，不造假结果）
+
 ## 验收
 
 - 三接口调用正确（judge/clarify/structure 契约对齐）

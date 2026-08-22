@@ -31,6 +31,14 @@ ThoughtRepository（本地文件实现——对齐 qtcloud-agent 惯例）
 
 种子（演示想法/示例日志）在 `src/studio/assets/data/`（git 跟踪）——加载时作为初始数据源（可区分来源），与仓储接口无关。
 
+## 测试（repositories/thought_repository_test.dart）
+
+- 写入读回一致（add → load，临时目录注入 `Directory.systemTemp.createTemp()`）
+- 更新持久化（update 状态 → 读回一致）
+- 按状态过滤（byStatus raw/structured 分组）
+- 原子写不损坏（写入中断 → 重载仍有效）
+- 空数据（无文件 → load 返回空列表）
+
 ## 并发/一致性
 
 - 单进程单写者（studio 本地使用）
