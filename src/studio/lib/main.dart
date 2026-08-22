@@ -1,25 +1,21 @@
 import 'package:flutter/material.dart';
-import 'screens/annotation_screen.dart';
 
 void main() {
-  runApp(const QtCloudThinkApp());
+  runApp(const QtCloudThinkStudioApp());
 }
 
-class QtCloudThinkApp extends StatelessWidget {
-  const QtCloudThinkApp({super.key});
+/// 应用壳（4D 导航——分解 4 实施，当前最小壳）
+class QtCloudThinkStudioApp extends StatelessWidget {
+  const QtCloudThinkStudioApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: '量潮思考云',
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF5b6abf),
-          brightness: Brightness.light,
-        ),
+      theme: ThemeData(useMaterial3: true),
+      home: const Scaffold(
+        body: Center(child: Text('量潮思考云 · 建设中')),
       ),
-      home: const AnnotationScreen(),
     );
   }
 }
