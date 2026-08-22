@@ -51,7 +51,7 @@ htmlcov/
 .env.local
 
 # Data (dynamic, never commit)
-data/
+/src/studio/data/
 
 # OS
 .DS_Store
