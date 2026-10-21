@@ -242,5 +242,5 @@ pub struct DataCoherence {
 ## 相关文档
 
 - [主项目 README](../../README.md)
-- [主项目 ROADMAP](../../ROADMAP.md)
+- [主项目 ROADMAP](../../docs/dev-guide/roadmap.md)
 - [贡献指南](../../CONTRIBUTING.md)
